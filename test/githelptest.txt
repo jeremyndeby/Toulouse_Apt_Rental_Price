@@ -1,0 +1,19 @@
+# 
+git init
+
+# Connect to a repository
+
+git remote add origin https://github.com/jeremyndeby/reponame.git
+git push -u origin master
+
+
+
+# Add Files To Git
+
+git add .
+git commit -am "Commit Message"
+git push
+	
+# Create a new folder
+mkdir foldername
+	
