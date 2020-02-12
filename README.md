@@ -1,6 +1,9 @@
 # Toulouse_Apt_Rental_Price
 Prediction of Rental Prices and Interactive Geographic Map of apartments in Toulouse, France.
 
+## Introduction
+This is an individual project for Toulouse apartments rental price prediction . I will use Linear Regression and Trees to create models predicting apartments rental price. 
+
 
 The contents include the following:
 
