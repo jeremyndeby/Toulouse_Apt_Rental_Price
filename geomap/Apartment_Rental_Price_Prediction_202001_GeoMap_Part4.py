@@ -2,7 +2,10 @@
 # coding: utf-8
 
 # # IV. Create an Interactive Geographic
-# Ref: 
+# Ref:
+# Source:
+# Info: The code is based on the work of ... that you can find on... Here we modified its code to fit our dataset
+
 # - https://towardsdatascience.com/how-to-create-an-interactive-geographic-map-using-python-and-bokeh-12981ca0b567
 
 # If you are looking for a powerful way to visualize geographic data then you should learn to use interactive Choropleth maps. A Choropleth map represents statistical data through various shading patterns or symbols on predetermined geographic areas such as countries, states or counties. Static Choropleth maps are useful for showing one view of data, but an interactive Choropleth map is much more powerful and allows the user to select the data they prefer to view.
@@ -10,28 +13,6 @@
 # The interactive chart below provides details on San Francisco single family homes sales. The chart breaks down the single family home sales by Median Sales Price, Minimum Income Required, Average Sales Price, Average Sales Price Per Square Foot, Average Square Footage and Number of Sales all by neighborhood and year (10 years of data).
 
 # In[1]:
-
-
-import os
-import pandas as pd
-from IPython.display import display
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.colors import ListedColormap
-plt.style.use(style='ggplot')
-plt.rcParams['figure.figsize'] = (10, 6)
-from matplotlib.colors import LogNorm
-from scipy.stats import skew
-
-# import necessary packages to work with spatial data in Python
-
-
-
-pd.options.display.max_columns = None
-pd.options.display.max_rows = None
-
 
 # ## Using Python and Bokeh
 # After exploring several different approaches, I found the combination of Python and Bokeh to be the most straightforward and well-documented method for creating interactive maps.
@@ -44,22 +25,24 @@ pd.options.display.max_rows = None
 
 
 # Import libraries
+import bokeh
 import pandas as pd
 import numpy as np
 import math
+
 
 import fiona
 import geopandas
 import json
 
 from bokeh.io import output_notebook, show, output_file
-from bokeh.plotting import figure
+from bokeh.plotting import figure, save
 from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar, NumeralTickFormatter
 from bokeh.palettes import brewer
-
 from bokeh.io.doc import curdoc
-from bokeh.models import Slider, HoverTool, Select
+from bokeh.models import Slider, HoverTool, Select, GMapOptions
 from bokeh.layouts import widgetbox, row, column
+from bokeh.plotting import gmap
 
 
 # 
@@ -69,9 +52,9 @@ from bokeh.layouts import widgetbox, row, column
 # Here we are importing the data from the csv file
 
 # In[3]:
+from click._unicodefun import click
 
-
-neighborhood_data = pd.read_csv('data_seloger_EDAforSpatial_part3.csv')
+neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
 neighborhood_data.head()
 
 
@@ -142,7 +125,7 @@ nbhd_data.sort_values(by=['nbhd_no'])
 
 
 # Read the geojson map file for Realtor Neighborhoods into a GeoDataframe object
-tlse = geopandas.read_file('recensement-population-2015-grands-quartiers-population.geojson')
+tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 tlse.head()
 
 
@@ -200,7 +183,7 @@ tlse['nbhd_no'] = tlse['grd_quart'].map(nbhd_dict)
 tlse_short = tlse[['nbhd_no', 'geometry']]
 
 # then summarize the quantative columns by 'sum' 
-tlse_agg = tlse_short.dissolve(by='nbhd_no', aggfunc = 'sum')
+tlse_agg = tlse_short.dissolve(by='nbhd_no', aggfunc='sum')
 
 # Convert index of a pandas dataframe into a column
 tlse_agg.reset_index('nbhd_no', inplace=True)
@@ -256,14 +239,14 @@ merged.describe()
 
 # This dictionary contains the formatting for the data in the plots
 format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Appartment For Rent'),
-               ('Min_Rent', 250, 550, '$0,0 ', 'Minimum Rent'),
+               ('Min_Rent', 250, 550, '0,0 ', 'Minimum Rent'),
                ('Max_Rent', 850, 3000, '0,0', 'Maximum Rent'),
-               ('Avg_Rent', 550, 800, '$0,0', 'Average Rent'),
-               ('Median_Rent', 550, 750, '$0,0', 'Median Rent'),
+               ('Avg_Rent', 550, 800, '0,0', 'Average Rent'),
+               ('Median_Rent', 550, 750, '0,0', 'Median Rent'),
                ('Avg_Area', 40, 60, '0,0', 'Average Area in Square Meters'),
                ('Median_Area', 40, 60, '0,0', 'Median Area in Square Meters'),
-               ('Avg_Rent_SqM', 11, 18, '$0,0', 'Average Rent per Square Meter'),
-               ('Median_Rent_SqM', 11, 18, '$0,0', 'Median Rent per Square Meter')]
+               ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rent per Square Meter'),
+               ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rent per Square Meter')]
  
 #Create a DataFrame object from the dictionary 
 format_df = pd.DataFrame(format_data, columns = ['field' , 'min_range', 'max_range' , 'format', 'verbage'])
@@ -308,33 +291,34 @@ def update_plot(attr, old, new):
 
 
 # Create a plotting function
-def make_plot(field_name):    
+def make_plot(field_name):
     # Set the format of the colorbar
     min_range = format_df.loc[format_df['field'] == field_name, 'min_range'].iloc[0]
     max_range = format_df.loc[format_df['field'] == field_name, 'max_range'].iloc[0]
     field_format = format_df.loc[format_df['field'] == field_name, 'format'].iloc[0]
 
     # Instantiate LinearColorMapper that linearly maps numbers in a range, into a sequence of colors.
-    color_mapper = LinearColorMapper(palette = palette, low = min_range, high = max_range)
+    color_mapper = LinearColorMapper(palette=palette, low=min_range, high=max_range)
 
     # Create color bar.
     format_tick = NumeralTickFormatter(format=field_format)
-    color_bar = ColorBar(color_mapper=color_mapper, label_standoff=18, formatter=format_tick,
-    border_line_color=None, location = (0, 0))
+    color_bar = ColorBar(color_mapper=color_mapper, label_standoff=6, formatter=format_tick,
+    border_line_color=None, location=(0, 0))
 
     # Create figure object.
+    map_options = GMapOptions(lat=43.60, lng=1.44, map_type="roadmap", zoom=12)
     verbage = format_df.loc[format_df['field'] == field_name, 'verbage'].iloc[0]
-
-    p = figure(title = verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)', 
-             plot_height = 650, plot_width = 850,
-             toolbar_location = None)
+    p = gmap("AIzaSyAZFYgSIFA5bFZJG7tTbpXRJuO39ryvL4s", map_options,
+             title=verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
+             plot_height=650, plot_width=850,
+             toolbar_location="below")
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
     p.axis.visible = False
 
-    # Add patch renderer to figure. 
-    p.patches('xs','ys', source = geosource, fill_color = {'field' : field_name, 'transform' : color_mapper},
-          line_color = 'black', line_width = 0.25, fill_alpha = 1)
+    # Add patch renderer to figure.
+    p.patches('xs', 'ys', source=geosource, fill_color={'field': field_name, 'transform': color_mapper},
+              line_color='black', line_width=0.25, fill_alpha=0.7)
 
     # Specify color bar layout.
     p.add_layout(color_bar, 'right')
@@ -355,7 +339,7 @@ def make_plot(field_name):
 geosource = GeoJSONDataSource(geojson = json_data)
 
 # Define a sequential multi-hue color palette.
-palette = brewer['Purples'][9] # "La Garonne est viola"
+palette = brewer['Reds'][9]
 
 # Reverse color order so that dark blue is highest obesity.
 palette = palette[::-1]
@@ -383,6 +367,7 @@ input_field = 'Median_Rent_SqM'
 p = make_plot(input_field)
 
 
+
 # #### Widgets and The Callback Function
 # We need to use a Bokeh widgets, more precisely a Select object allows the user to select the criteria (or column).
 # This widget works on the following principle - the callback. 
@@ -401,22 +386,27 @@ select = Select(title='Select Criteria:', value='Median Sales Price', options=['
 select.on_change('value', update_plot)
 
 
+# Make a column layout of widgetbox(slider) and plot, and add it to the current document
+# Display the current document
+layout = column(p, widgetbox(select))
+curdoc().add_root(layout)
+
 # #### The Static Map with ColorBar and HoverTool
-
-# In[196]:
-
 
 # Use the following code to test in a notebook, comment out for transfer to live site
 # Interactive features will not show in notebook
-output_notebook()
+#output_notebook()
+#show(p)
+
+
+
+
+# Show the map
 show(p)
 
-
-# In[197]:
-
-
-output_file('test.html')
-show(p)
+# Save the map
+outfp = r'./geomap/test2.html' # Output filepath
+save(p, outfp)
 
 
 # #### The Bokeh Server
@@ -433,24 +423,12 @@ show(p)
 
 
 
-# In[170]:
+#from bokeh import server
+# Run from command prompt
+# cd C:\Users\jerem\Google Drive\Mes Documents\Travail\Projects\Toulouse_Apt_Rental_Price\geomap
+# bokeh serve --show Apartment_Rental_Price_Prediction_202001_GeoMap_Part4.py
 
 
-bokeh serve:show filename.ipynb
-
-
-# In[ ]:
-
-
-import Jinja2
-import packaging
-import pillow
-import dateutil
-import PyYAML
-import six
-import tornado
-import Futures
-import bokeh
 
 
 # #### Public Access to the Interactive Graph via Heroku
@@ -462,9 +440,6 @@ import bokeh
 # 4. Create a Heroku app and connect to your GitHub repository containing your .py file.
 # 5. Create a Procfile and requirements.txt file. See mine in my GitHub.
 # 6. Run the app!
-# 
-
-# In[ ]:
 
 
 
