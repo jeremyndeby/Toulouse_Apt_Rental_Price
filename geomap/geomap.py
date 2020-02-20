@@ -246,11 +246,11 @@ def make_plot(field_name):
 geosource = GeoJSONDataSource(geojson = json_data)
 
 # Define a sequential multi-hue color palette.
-palette = brewer['Reds'][9]
+palette = brewer['RdYlGn'][10]
+# Reds/RdYlGn
 
-# Reverse color order so that dark blue is highest obesity.
-palette = palette[::-1]
-
+# Reverse color order so that Red is highest obesity (only for Reds)
+#palette = palette[::-1]
 
 # #### The HoverTool
 # The HoverTool is a fairly straightforward Bokeh tool that allows the user to hover over an item and display values.
