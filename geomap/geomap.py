@@ -222,7 +222,8 @@ def make_plot(field_name):
              toolbar_location = None)
 
     # add tile
-    p.add_tile(STAMEN_TERRAIN)
+    tile_provider = get_provider(Vendors.STAMEN_TERRAIN )
+    p.add_tile(tile_provider)
 
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
