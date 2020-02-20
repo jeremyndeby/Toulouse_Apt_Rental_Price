@@ -1,0 +1,5 @@
+bokeh==1.4.0
+Fiona==1.8.11
+geopandas==0.6.1
+numpy==1.18.1
+pandas==1.0.1
