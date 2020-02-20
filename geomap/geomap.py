@@ -219,15 +219,16 @@ def make_plot(field_name):
 
     p = figure(title = verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
              plot_height = 650, plot_width = 850,
-             toolbar_location = None)
+             toolbar_location = None,
+            x_axis_type="mercator", y_axis_type="mercator")
 
     # add tile
     tile_provider = get_provider(Vendors.STAMEN_TERRAIN )
     p.add_tile(tile_provider)
 
-    p.xgrid.grid_line_color = None
-    p.ygrid.grid_line_color = None
-    p.axis.visible = False
+    #p.xgrid.grid_line_color = None
+    #p.ygrid.grid_line_color = None
+    #p.axis.visible = False
 
     # Add patch renderer to figure.
     p.patches('xs','ys', source = geosource, fill_color = {'field' : field_name, 'transform' : color_mapper},
