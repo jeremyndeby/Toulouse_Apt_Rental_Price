@@ -11,6 +11,12 @@ In summary, the aims of this project are:
 2. To build a model to estimate what should be the correct rental price given different features and their property.
 3. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
 
+
+## Interactive Map
+The interactive chart below provides details on Toulouse apartments for rent currently available. The chart breaks down the apartments for rent by Median Sales Price, Minimum Income Required, Average Sales Price, Average Sales Price Per Square Foot, Average Square Footage and Number of Sales all by neighborhood.
+[Interactive Chart of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
+
+
 ## Data: A data directory
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
 - tttt.csv - The raw data scraped from https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0 for all currently available apartments for rent in Toulouse, France.
