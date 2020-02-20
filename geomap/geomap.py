@@ -28,7 +28,7 @@ from bokeh.palettes import brewer
 from bokeh.io.doc import curdoc
 from bokeh.models import Slider, HoverTool, Select, GMapOptions
 from bokeh.layouts import widgetbox, row, column
-from bokeh.plotting import gmap
+from bokeh.tile_providers import STAMEN_TERRAIN
 
 
 # ## 4.1 Load and Clean the Data
@@ -221,6 +221,10 @@ def make_plot(field_name):
     p = figure(title = verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
              plot_height = 650, plot_width = 850,
              toolbar_location = None)
+
+    # add tile
+    p.add_tile(STAMEN_TERRAIN)
+
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
     p.axis.visible = False
