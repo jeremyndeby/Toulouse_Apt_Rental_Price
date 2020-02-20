@@ -28,8 +28,7 @@ from bokeh.palettes import brewer
 from bokeh.io.doc import curdoc
 from bokeh.models import Slider, HoverTool, Select, GMapOptions
 from bokeh.layouts import widgetbox, row, column
-from bokeh.tile_providers import STAMEN_TERRAIN
-
+from bokeh.tile_providers import get_provider, Vendors
 
 # ## 4.1 Load and Clean the Data
 
@@ -231,7 +230,7 @@ def make_plot(field_name):
 
     # Add patch renderer to figure.
     p.patches('xs','ys', source = geosource, fill_color = {'field' : field_name, 'transform' : color_mapper},
-          line_color = 'black', line_width = 0.25, fill_alpha = 1)
+          line_color = 'black', line_width = 0.25, fill_alpha = 0.75)
 
     # Specify color bar layout.
     p.add_layout(color_bar, 'right')
@@ -250,11 +249,11 @@ def make_plot(field_name):
 geosource = GeoJSONDataSource(geojson = json_data)
 
 # Define a sequential multi-hue color palette.
-palette = brewer['RdYlGn'][10]
+palette = brewer['Reds'][9]
 # Reds/RdYlGn
 
 # Reverse color order so that Red is highest obesity (only for Reds)
-#palette = palette[::-1]
+palette = palette[::-1]
 
 # #### The HoverTool
 # The HoverTool is a fairly straightforward Bokeh tool that allows the user to hover over an item and display values.
@@ -305,7 +304,7 @@ curdoc().add_root(layout)
 show(p)
 
 # Save the map
-outfp = r'./geomap/test4.html' # Output filepath
+#outfp = r'./geomap/test4.html' # Output filepath
 #save(p, outfp)
 
 
