@@ -4,15 +4,21 @@
 # # IV. Create an Interactive Geographic
 # Ref:
 # Source:
-# Info: The code is based on the work of ... that you can find on... Here we modified its code to fit our dataset
-# - https://towardsdatascience.com/how-to-create-an-interactive-geographic-map-using-python-and-bokeh-12981ca0b567
+# Source: The code is based on the work of Jim King available here: https://github.com/JimKing100/SF_Real_Estate_Live
+# Info: Here we modified its code to fit our dataset and to add a google map tile
 
 # The interactive chart below provides details on Toulouse Apartment sales.
-# The chart breaks down the apartments for rent by Median Rental Price, Minimum Income Required, Average Sales Price, Average Sales Price Per Square Foot, Average Square Footage and Number of Sales all by neighborhood and year (10 years of data).
+# The chart breaks down the apartments for rent by
+# Median Rental Price in €
+# Average Rental Price in €
+# Median Area in Square Meters
+# Average Area in Square Meters
+# Median Rental Price per Square Meter
+# Average Rental Price per Square Meter
+# Number of Apartments for Rent
 
 
 # Import libraries
-
 import json
 import os
 
@@ -26,11 +32,12 @@ from bokeh.models import HoverTool, Select, GMapOptions
 from bokeh.palettes import brewer
 from bokeh.plotting import gmap
 
+# Import google API key
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # ## 4.1 Load and Clean the Data
 
-# Here we are importing the data from the csv file
+# Import the data
 #neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
 neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_geomap.csv')
 
@@ -263,7 +270,7 @@ hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
                                ('Maximum Rental Price', '@Max_Rent{,} €')])
 
 # Call the plotting function
-input_field = 'Median_Rent_SqM'
+input_field = 'Median_Rent'
 p = make_plot(input_field)
 
 
@@ -278,7 +285,7 @@ p = make_plot(input_field)
 select = Select(title='Select Criteria:', value='Median Rental Price (€)',
               options=['Median Rental Price (€)', 'Average Rental Price (€)',
                        'Median Rental Price per Square Meter', 'Average Rental Price per Square Meter',
-                       'Median Rental Price in Square Meters', 'Average Area in Square Meters',
+                       'Median Area in Square Meters', 'Average Area in Square Meters',
                        'Number of Apartments For Rent'])
 
 select.on_change('value', update_plot)
