@@ -8,7 +8,7 @@
 # - https://towardsdatascience.com/how-to-create-an-interactive-geographic-map-using-python-and-bokeh-12981ca0b567
 
 # The interactive chart below provides details on Toulouse Apartment sales.
-# The chart breaks down the apartments for rent by Median Sales Price, Minimum Income Required, Average Sales Price, Average Sales Price Per Square Foot, Average Square Footage and Number of Sales all by neighborhood and year (10 years of data).
+# The chart breaks down the apartments for rent by Median Rental Price, Minimum Income Required, Average Sales Price, Average Sales Price Per Square Foot, Average Square Footage and Number of Sales all by neighborhood and year (10 years of data).
 
 
 # Import libraries
@@ -149,15 +149,15 @@ json_data = json.dumps(merged_json)
 # #### Create The ColorBar
 
 # This dictionary contains the formatting for the data in the plots
-format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Appartment For Rent'),
-               ('Min_Rent', 250, 550, '0,0 ', 'Minimum Rent'),
-               ('Max_Rent', 850, 3000, '0,0', 'Maximum Rent'),
-               ('Avg_Rent', 550, 800, '0,0', 'Average Rent'),
-               ('Median_Rent', 550, 750, '0,0', 'Median Rent'),
+format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent'),
+               ('Min_Rent', 250, 550, '0,0 ', 'Minimum Rental Price (€)'),
+               ('Max_Rent', 850, 3000, '0,0', 'Maximum Rental Price (€)'),
+               ('Avg_Rent', 550, 800, '0,0', 'Average Rental Price (€)'),
+               ('Median_Rent', 550, 750, '0,0', 'Median Rental Price (€)'),
                ('Avg_Area', 40, 60, '0,0', 'Average Area in Square Meters'),
                ('Median_Area', 40, 60, '0,0', 'Median Area in Square Meters'),
-               ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rent per Square Meter'),
-               ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rent per Square Meter')]
+               ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rental Price per Square Meter'),
+               ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rental Price per Square Meter')]
 
 #Create a DataFrame object from the dictionary
 format_df = pd.DataFrame(format_data, columns = ['field', 'min_range', 'max_range' , 'format', 'verbage'])
@@ -183,7 +183,7 @@ def update_plot(attr, old, new):
 
 # #### Create a Plotting Function
 # The final piece of the map is make_plot, the plotting function. Let’s break this down:
-# 1. We pass it the field_name to indicate which column of data we want to plot (e.g. Median Sales Price).
+# 1. We pass it the field_name to indicate which column of data we want to plot (e.g. Median Rental Price).
 # 2. Using the format_df we pull out the minimum range, maximum range and formatting for the ColorBar.
 # 3. We call Bokeh’s LinearColorMapper to set the palette and range of the colorbar.
 # 4. We create the ColorBar using Bokeh’s NumeralTickFormatter and ColorBar.
@@ -211,7 +211,7 @@ def make_plot(field_name):
     map_options = GMapOptions(lat=43.60, lng=1.44, map_type="roadmap", zoom=12)
     verbage = format_df.loc[format_df['field'] == field_name, 'verbage'].iloc[0]
     p = gmap(GOOGLE_API_KEY, map_options,
-             title=verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
+             title=verbage + ' by Neighborhood for Apartments for Rent in Toulouse (2020)',
              plot_height=650, plot_width=850,
              toolbar_location="below")
     p.xgrid.grid_line_color = None
@@ -254,11 +254,13 @@ palette = palette[::-1]
 # Add hover tool
 hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
                                ('Neighborhood', '@nbhd_name'),
-                               ('#Apt. For Rent', '@Tot_Apt_ForRent available'),
-                               ('Median Rent', '@Median_Rent{,} €'),
-                               ('Average Rent', '@Avg_Rent{,} €'),
+                               ('# Apartment', '@Tot_Apt_ForRent available'),
+                               ('Median Rental Price', '@Median_Rent{,} €'),
+                               ('Average Rental Price', '@Avg_Rent{,} €'),
                                ('Median Area', '@Median_Area{,} SqM'),
-                               ('Median Rent/SqM', '@Median_Rent_SqM{0.2f} €/SqM')])
+                               ('Median Rental Price/SqM', '@Median_Rent_SqM{0.2f} €/SqM'),
+                               ('Minimum Rental Price', '@Min_Rent{,} €'),
+                               ('Maximum Rental Price', '@Max_Rent{,} €')])
 
 # Call the plotting function
 input_field = 'Median_Rent_SqM'
@@ -273,12 +275,11 @@ p = make_plot(input_field)
 # when the .on_change method is called (when a change is made using the widget - the event handler).
 
 # Make a selection object: select
-select = Select(title='Select Criteria:', value='Median Sales Price',
-              options=['Median Rent', 'Average Rent',
-                       'Median Rent per Square Meter', 'Average Rent per Square Meter',
-                       'Median Area in Square Meters', 'Average Area in Square Meters',
-                       'Minimum Rent','Maximum Rent',
-                       'Number of Appartment For Rent'])
+select = Select(title='Select Criteria:', value='Median Rental Price (€)',
+              options=['Median Rental Price (€)', 'Average Rental Price (€)',
+                       'Median Rental Price per Square Meter', 'Average Rental Price per Square Meter',
+                       'Median Rental Price in Square Meters', 'Average Area in Square Meters',
+                       'Number of Apartments For Rent'])
 
 select.on_change('value', update_plot)
 
