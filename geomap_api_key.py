@@ -228,7 +228,7 @@ def make_plot(field_name):
 
     # Add patch renderer to figure.
     p.patches('xs', 'ys', source=geosource, fill_color={'field': field_name, 'transform': color_mapper},
-              line_color='black', line_width=0.25, fill_alpha=0.75)
+              line_color='black', line_width=0.25, fill_alpha=0.7)
 
     # Specify color bar layout.
     p.add_layout(color_bar, 'right')
@@ -322,4 +322,3 @@ show(p)
 # 4. Create a Heroku app and connect to your GitHub repository containing your .py file.
 # 5. Create a Procfile and requirements.txt file. See mine in my GitHub.
 # 6. Run the app!
-
