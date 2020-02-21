@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # IV. Create an Interactive Geographic
-# Ref:
-# Source:
+##### Create an Interactive Geographic #####
 # Source: The code is based on the work of Jim King available here: https://github.com/JimKing100/SF_Real_Estate_Live
 # Info: Here we modified its code to fit our dataset and to add a google map tile
 
 # The interactive chart below provides details on Toulouse Apartment sales.
-# The chart breaks down the apartments for rent by
+# The chart breaks down the apartments for rent by:
 # Median Rental Price in €
 # Average Rental Price in €
 # Median Area in Square Meters
