@@ -13,23 +13,18 @@
 
 # Import libraries
 
-import pandas as pd
-import numpy as np
-import math
-from click._unicodefun import click
-import fiona
-import geopandas
 import json
-import bokeh
-from bokeh.io import output_notebook, show, output_file
-from bokeh.plotting import figure, save
-from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar, NumeralTickFormatter
-from bokeh.palettes import brewer
-from bokeh.io.doc import curdoc
-from bokeh.models import Slider, HoverTool, Select, GMapOptions
-from bokeh.layouts import widgetbox, row, column
-from bokeh.plotting import gmap
 import os
+
+import geopandas
+import numpy as np
+import pandas as pd
+from bokeh.io.doc import curdoc
+from bokeh.layouts import widgetbox, column
+from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar, NumeralTickFormatter
+from bokeh.models import HoverTool, Select, GMapOptions
+from bokeh.palettes import brewer
+from bokeh.plotting import gmap
 
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
@@ -37,7 +32,7 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # Here we are importing the data from the csv file
 #neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
-neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA/data_seloger_EDAforSpatial_part3.csv')
+neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_geomap.csv')
 
 # Create a rent_SqM feature
 neighborhood_data['Rent_SqM'] = neighborhood_data['rent'] / neighborhood_data['area']
