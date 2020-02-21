@@ -161,8 +161,8 @@ format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent
                ('Max_Rent', 850, 3000, '0,0', 'Maximum Rental Price (€)'),
                ('Avg_Rent', 550, 800, '0,0', 'Average Rental Price (€)'),
                ('Median_Rent', 550, 750, '0,0', 'Median Rental Price (€)'),
-               ('Avg_Area', 40, 60, '0,0', 'Average Area in Square Meters'),
-               ('Median_Area', 40, 60, '0,0', 'Median Area in Square Meters'),
+               ('Avg_Area', 40, 60, '0,0', 'Average Area (SqM)'),
+               ('Median_Area', 40, 60, '0,0', 'Median Area (SqM)'),
                ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rental Price per Square Meter'),
                ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rental Price per Square Meter')]
 
@@ -265,6 +265,7 @@ hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
                                ('Median Rental Price', '@Median_Rent{,} €'),
                                ('Average Rental Price', '@Avg_Rent{,} €'),
                                ('Median Area', '@Median_Area{,} SqM'),
+                               ('Average Area', '@Avg_Area{,} SqM'),
                                ('Median Rental Price/SqM', '@Median_Rent_SqM{0.2f} €/SqM'),
                                ('Minimum Rental Price', '@Min_Rent{,} €'),
                                ('Maximum Rental Price', '@Max_Rent{,} €')])
@@ -272,7 +273,6 @@ hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
 # Call the plotting function
 input_field = 'Median_Rent'
 p = make_plot(input_field)
-
 
 
 # #### Widgets and The Callback Function
@@ -284,8 +284,8 @@ p = make_plot(input_field)
 # Make a selection object: select
 select = Select(title='Select Criteria:', value='Median Rental Price (€)',
               options=['Median Rental Price (€)', 'Average Rental Price (€)',
+                       'Median Area (SqM)', 'Average Area (SqM)',
                        'Median Rental Price per Square Meter', 'Average Rental Price per Square Meter',
-                       'Median Area in Square Meters', 'Average Area in Square Meters',
                        'Number of Apartments For Rent'])
 
 select.on_change('value', update_plot)
