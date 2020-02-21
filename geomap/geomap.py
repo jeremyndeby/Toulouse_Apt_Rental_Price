@@ -28,16 +28,16 @@ from bokeh.palettes import brewer
 from bokeh.io.doc import curdoc
 from bokeh.models import Slider, HoverTool, Select, GMapOptions
 from bokeh.layouts import widgetbox, row, column
-from bokeh.tile_providers import get_provider, Vendors
+from bokeh.plotting import gmap
+import os
+
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # ## 4.1 Load and Clean the Data
 
 # Here we are importing the data from the csv file
-
 #neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
 neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA/data_seloger_EDAforSpatial_part3.csv')
-neighborhood_data.head()
-
 
 # Create a rent_SqM feature
 neighborhood_data['Rent_SqM'] = neighborhood_data['rent'] / neighborhood_data['area']
@@ -81,8 +81,6 @@ nbhd_data.sort_values(by=['nbhd_no'])
 # Read the geojson map file for Realtor Neighborhoods into a GeoDataframe object
 #tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
-tlse.head()
-
 
 # First let's take a look at the neighborhoods (column 'libelle_des_grands_quartiers') displayed in nbhd_data Dataframe:
 print('Numbers of unique neighborhoods in nbhd_data: {} '.format(nbhd_data['nbhd_name'].describe()))
@@ -207,38 +205,34 @@ def make_plot(field_name):
     field_format = format_df.loc[format_df['field'] == field_name, 'format'].iloc[0]
 
     # Instantiate LinearColorMapper that linearly maps numbers in a range, into a sequence of colors.
-    color_mapper = LinearColorMapper(palette = palette, low = min_range, high = max_range)
+    color_mapper = LinearColorMapper(palette=palette, low=min_range, high=max_range)
 
     # Create color bar.
     format_tick = NumeralTickFormatter(format=field_format)
     color_bar = ColorBar(color_mapper=color_mapper, label_standoff=6, formatter=format_tick,
-    border_line_color=None, location = (0, 0))
+    border_line_color=None, location=(0, 0))
 
     # Create figure object.
+    map_options = GMapOptions(lat=43.60, lng=1.44, map_type="roadmap", zoom=12)
     verbage = format_df.loc[format_df['field'] == field_name, 'verbage'].iloc[0]
-
-    p = figure(title = verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
-             plot_height = 650, plot_width = 850,
-             toolbar_location = None,
-            x_axis_type="mercator", y_axis_type="mercator")
-
-    # add tile
-    tile_provider = get_provider(Vendors.STAMEN_TERRAIN )
-    p.add_tile(tile_provider)
-
-    #p.xgrid.grid_line_color = None
-    #p.ygrid.grid_line_color = None
-    #p.axis.visible = False
+    p = gmap(GOOGLE_API_KEY, map_options,
+             title=verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
+             plot_height=650, plot_width=850,
+             toolbar_location="below")
+    p.xgrid.grid_line_color = None
+    p.ygrid.grid_line_color = None
+    p.axis.visible = False
 
     # Add patch renderer to figure.
-    p.patches('xs','ys', source = geosource, fill_color = {'field' : field_name, 'transform' : color_mapper},
-          line_color = 'black', line_width = 0.25, fill_alpha = 0.75)
+    p.patches('xs', 'ys', source=geosource, fill_color={'field': field_name, 'transform': color_mapper},
+              line_color='black', line_width=0.25, fill_alpha=0.7)
 
     # Specify color bar layout.
     p.add_layout(color_bar, 'right')
 
     # Add the hover tool to the graph
     p.add_tools(hover)
+
     return p
 
 
@@ -252,10 +246,10 @@ geosource = GeoJSONDataSource(geojson = json_data)
 
 # Define a sequential multi-hue color palette.
 palette = brewer['Reds'][9]
-# Reds/RdYlGn
 
-# Reverse color order so that Red is highest obesity (only for Reds)
+# Reverse color order so that dark blue is highest obesity.
 palette = palette[::-1]
+
 
 # #### The HoverTool
 # The HoverTool is a fairly straightforward Bokeh tool that allows the user to hover over an item and display values.
@@ -263,15 +257,13 @@ palette = palette[::-1]
 # using “@” to indicate the column values.
 
 # Add hover tool
-hover = HoverTool(tooltips = [ ('Sector','@sector_name'),
-                               ('Neighborhood','@nbhd_name'),
+hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
+                               ('Neighborhood', '@nbhd_name'),
                                ('#Apt. For Rent', '@Tot_Apt_ForRent available'),
-                               ('Average Rent', '@Avg_Rent{,} €'),
                                ('Median Rent', '@Median_Rent{,} €'),
+                               ('Average Rent', '@Avg_Rent{,} €'),
                                ('Median Area', '@Median_Area{,} SqM'),
-                               ('Median Rent/SqM', '@Median_Rent_SqM{0.2f} €/SqM'),
-                               ('Minimum Rent', '@Min_Rent{,} €'),
-                               ('Maximum Rent', '@Max_Rent{,} €')])
+                               ('Median Rent/SqM', '@Median_Rent_SqM{0.2f} €/SqM')])
 
 # Call the plotting function
 input_field = 'Median_Rent_SqM'
@@ -303,10 +295,10 @@ curdoc().add_root(layout)
 
 # #### The Static Map with ColorBar and HoverTool
 # Show the map
-show(p)
+#show(p)
 
 # Save the map
-#outfp = r'./geomap/test4.html' # Output filepath
+#outfp = r'./geomap/test3.html' # Output filepath
 #save(p, outfp)
 
 
@@ -315,15 +307,3 @@ show(p)
 # Run from command prompt
 # cd C:\Users\jerem\Google Drive\Mes Documents\Travail\Projects\Toulouse_Apt_Rental_Price\geomap
 # bokeh serve --show Apartment_Rental_Price_Prediction_202001_GeoMap_Part4.py
-
-
-# #### Public Access to the Interactive Graph via Heroku
-# Once you get the interactive graph working locally, you can let others access it by using a public Bokeh hosting service such as Heroku. Heroku will host the interactive graph allowing you to link to it (as in this article) or use an iframe such as on my GitHub Pages site.
-# The basic steps to host on Heroku are:
-# 1. Change the Colab notebook to comment out the install of fiona and geopandas. Heroku has these items and the build will fail if they are in the code.
-# 2. Change the Colab notebook to comment out the last two lines (output_notebook() and show(p)).
-# 3. Download the Colab notebook as a .py file and upload it to a GitHub repository.
-# 4. Create a Heroku app and connect to your GitHub repository containing your .py file.
-# 5. Create a Procfile and requirements.txt file. See mine in my GitHub.
-# 6. Run the app!
-
