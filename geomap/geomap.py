@@ -32,6 +32,8 @@ from bokeh.models import HoverTool, Select, GMapOptions
 from bokeh.palettes import brewer
 from bokeh.plotting import gmap
 
+#from bokeh import server
+
 # Import google API key
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
@@ -80,17 +82,22 @@ nbhd_data.sort_values(by=['nbhd_no'])
 # Toulouse, through their website https://data.toulouse-metropole.fr/, has some exportable neighborhood maps in GeoJSON format providing various demographic.
 # We will import one of them into a GeoDataframe object.
 
-# Read the geojson map file for Realtor Neighborhoods into a GeoDataframe object
+
+
+### Prepare the mapping data and GeoDataFrame
+
+# Read the geojson map file for Neighborhoods into a GeoDataframe object
 #tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 
-# First let's take a look at the neighborhoods (column 'libelle_des_grands_quartiers') displayed in nbhd_data Dataframe:
+# Number of neighborhoods (column 'libelle_des_grands_quartiers') displayed in nbhd_data Dataframe:
 print('Numbers of unique neighborhoods in nbhd_data: {} '.format(nbhd_data['nbhd_name'].describe()))
 # There are 20 unique neighborhoods in nbhd_data Dataframe.
 
-# Now let's take a look at the neighborhoods (column 'libelle_des_grands_quartiers') displayed in tlse GeoDataframe:
+# NNumber of neighborhoods (column 'libelle_des_grands_quartiers') displayed in tlse GeoDataframe:
 print('Numbers of unique neighborhoods in tlse: {} '.format(tlse['libelle_des_grands_quartiers'].describe()))
 # There are 60 unique neighborhoods in tlse GeoDataframe and thus three times more neighborhoods in the file imported from the Toulouse website.
+
 # By taking a visual look at the neighborhood names we identify that each neighborhood have been divided in smaller ones in the GeoDataFrame.
 # To fix this issue we need to:
 # 1. Create a dictionary to change the neighborhood codes in the map to match the neighborhood codes in the data
@@ -125,35 +132,12 @@ tlse_agg = tlse_short.dissolve(by='nbhd_no', aggfunc='sum')
 # Convert index of a pandas dataframe into a column
 tlse_agg.reset_index('nbhd_no', inplace=True)
 
-
-# We use geopandas to read the geojson map into the GeoDataFrame sf.
-# We then set the coordinate reference system to lat-long projection.
-# Next, we rename several columns and use set_geometry to set the GeoDataFrame to column ‘geometry’ containing the active geometry (the description of the shapes to draw).
-# Finally, we clean up some neighborhood id’s to match neighborhood_data.
-
-# Set the Coordinate Referance System (crs) for projections
-# ESPG code 4326 is also referred to as WGS84 lat-long projection
+# Set the Coordinate Referance System (crs) for projections: ESPG code 4326 is also referred to as WGS84 lat-long projection
 tlse_agg.crs = {'init': 'epsg:4326'}
 
 
-# ## Create the Interactive Plot
 
-# #### Create the JSON Data for the GeoJSONDataSource
-
-# We now need to merges our neighborhood data with our mapping data and converts it into JSON format for the Bokeh server.
-
-# Merge the GeoDataframe object (tlse_agg) with the neighborhood summary data (neighborhood)
-merged = pd.merge(tlse_agg, nbhd_data, on='nbhd_no', how='left')
-
-# Bokeh uses geojson formatting, representing geographical features, with json
-# Convert to json
-merged_json = json.loads(merged.to_json())
-
-# Convert to json preferred string-like object
-json_data = json.dumps(merged_json)
-
-
-# #### Create The ColorBar
+### Create colorbar formatting lookup table
 
 # This dictionary contains the formatting for the data in the plots
 format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent'),
@@ -170,8 +154,26 @@ format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent
 format_df = pd.DataFrame(format_data, columns = ['field', 'min_range', 'max_range' , 'format', 'verbage'])
 
 
+
+### Create the Interactive Plot
+
+# Create a function that merges the neighborhood data with the mapping data and returns json_data
+def json_data():
+    # Merge the GeoDataframe object (tlse_agg) with the neighborhood summary data (nbhd_data)
+    merged = pd.merge(tlse_agg, nbhd_data, on='nbhd_no', how='left')
+
+    # Convert to json
+    merged_json = json.loads(merged.to_json())
+
+    # Convert to json preferred string-like object
+    json_data = json.dumps(merged_json)
+    return json_data
+
+
 # Define the callback function: update_plot
 def update_plot(attr, old, new):
+    new_data = json_data()
+
     # The input cr is the criteria selected from the select box
     cr = select.value
     input_field = format_df.loc[format_df['verbage'] == cr, 'field'].iloc[0]
@@ -185,18 +187,7 @@ def update_plot(attr, old, new):
     curdoc().add_root(layout)
 
     # Update the data
-    geosource.geojson = json_data
-
-
-# #### Create a Plotting Function
-# The final piece of the map is make_plot, the plotting function. Let’s break this down:
-# 1. We pass it the field_name to indicate which column of data we want to plot (e.g. Median Rental Price).
-# 2. Using the format_df we pull out the minimum range, maximum range and formatting for the ColorBar.
-# 3. We call Bokeh’s LinearColorMapper to set the palette and range of the colorbar.
-# 4. We create the ColorBar using Bokeh’s NumeralTickFormatter and ColorBar.
-# 5. We create the plot figure with appropriate title.
-# 6. We create the “patches”, in our case the neighborhood polygons, using Bokeh’s p.patches glyph using the data in geosource.
-# 7. We add the colorbar and the HoverTool to the plot and return the plot p.
+    geosource.geojson = new_data
 
 
 # Create a plotting function
@@ -216,7 +207,9 @@ def make_plot(field_name):
 
     # Create figure object.
     map_options = GMapOptions(lat=43.60, lng=1.44, map_type="roadmap", zoom=12)
+
     verbage = format_df.loc[format_df['field'] == field_name, 'verbage'].iloc[0]
+
     p = gmap(GOOGLE_API_KEY, map_options,
              title=verbage + ' by Neighborhood for Apartments for Rent in Toulouse (2020)',
              plot_height=650, plot_width=850,
@@ -234,29 +227,21 @@ def make_plot(field_name):
 
     # Add the hover tool to the graph
     p.add_tools(hover)
-
     return p
 
 
-# #### Main Code for Interactive Map
-# We still need several pieces of code to make the interactive map including a ColorBar, Bokeh widgets and tools, a plotting function and an update function, but before we go into detail on those pieces let’s take a look at the main code.
 
+### Main Code for Interactive Map
 
-# Input geojson source that contains features for plotting for:
-# initial year 2018 and initial criteria sale_price_median
-geosource = GeoJSONDataSource(geojson = json_data)
+# Input geojson source that contains features for plotting for initial criteria Median_Rent
+geosource = GeoJSONDataSource(geojson = json_data())
+input_field = 'Median_Rent'
 
 # Define a sequential multi-hue color palette.
 palette = brewer['Reds'][9]
 
-# Reverse color order so that dark blue is highest obesity.
+# Reverse color order so that dark red is highest obesity.
 palette = palette[::-1]
-
-
-# #### The HoverTool
-# The HoverTool is a fairly straightforward Bokeh tool that allows the user to hover over an item and display values.
-# In the main code we insert HoverTool code and tell it to use the data based on the neighborhood_name and display the six criteria
-# using “@” to indicate the column values.
 
 # Add hover tool
 hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
@@ -271,15 +256,7 @@ hover = HoverTool(tooltips = [ ('Sector', '@sector_name'),
                                ('Maximum Rental Price', '@Max_Rent{,} €')])
 
 # Call the plotting function
-input_field = 'Median_Rent'
 p = make_plot(input_field)
-
-
-# #### Widgets and The Callback Function
-# We need to use a Bokeh widgets, more precisely a Select object allows the user to select the criteria (or column).
-# This widget works on the following principle - the callback.
-# In the code below, the widgets pass a ‘value’ and call a function named update_plot
-# when the .on_change method is called (when a change is made using the widget - the event handler).
 
 # Make a selection object: select
 select = Select(title='Select Criteria:', value='Median Rental Price (€)',
@@ -287,7 +264,6 @@ select = Select(title='Select Criteria:', value='Median Rental Price (€)',
                        'Median Area (SqM)', 'Average Area (SqM)',
                        'Median Rental Price per Square Meter', 'Average Rental Price per Square Meter',
                        'Number of Apartments For Rent'])
-
 select.on_change('value', update_plot)
 
 
@@ -296,7 +272,8 @@ select.on_change('value', update_plot)
 layout = column(p, widgetbox(select))
 curdoc().add_root(layout)
 
-# #### The Static Map with ColorBar and HoverTool
+
+### Testing
 # Show the map
 #show(p)
 
@@ -304,9 +281,6 @@ curdoc().add_root(layout)
 #outfp = r'./geomap/test3.html' # Output filepath
 #save(p, outfp)
 
-
-# #### The Bokeh Server
-#from bokeh import server
-# Run from command prompt
+# Open locally with Bokeh Server (Run from command prompt)
 # cd C:\Users\jerem\Google Drive\Mes Documents\Travail\Projects\Toulouse_Apt_Rental_Price\geomap
-# bokeh serve --show Apartment_Rental_Price_Prediction_202001_GeoMap_Part4.py
+# bokeh serve --show geomap.py
