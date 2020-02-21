@@ -14,16 +14,12 @@
 # In[1]:
 
 
-import pandas as pd
-from IPython.display import display
-import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
 plt.style.use(style='ggplot')
-from matplotlib.colors import LogNorm
-from scipy.stats import skew
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 
 from scipy import stats
 from scipy.stats import norm, skew #for some statistics
@@ -36,7 +32,7 @@ pd.options.display.max_rows = None
 
 
 # load dataset
-df = pd.read_csv('data_seloger_preparation_part2.csv')
+df = pd.read_csv('.csv')
 
 
 # In[3]:
