@@ -37,7 +37,9 @@ from bokeh.plotting import gmap
 # Import google API key
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
-# ## 4.1 Load and Clean the Data
+
+
+### Load and Clean the Data
 
 # Import the data
 #neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
@@ -46,8 +48,7 @@ neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/T
 # Create a rent_SqM feature
 neighborhood_data['Rent_SqM'] = neighborhood_data['rent'] / neighborhood_data['area']
 
-# Create a new dataframe with the new features of interest
-#Max_Rent = round(neighborhood_data.groupby('nbhd_no').rent.max(),0)
+# Create a new dataframe with the features of interest grouped by neighborhood
 nbhd_data = neighborhood_data.groupby(['sector_no', 'sector_name', 'nbhd_no', 'nbhd_name']).agg(Tot_Apt_ForRent=('nbhd_no', 'size'),
                                               Min_Rent=('rent', 'min'),
                                               Max_Rent=('rent', 'max'),
@@ -78,14 +79,12 @@ nbhd_data[cols_round1] = nbhd_data[cols_round1].round(1)
 nbhd_data.sort_values(by=['nbhd_no'])
 
 
-# We now need to map this data onto a Toulouse neighborhood map.
-# Toulouse, through their website https://data.toulouse-metropole.fr/, has some exportable neighborhood maps in GeoJSON format providing various demographic.
-# We will import one of them into a GeoDataframe object.
-
-
 
 ### Prepare the mapping data and GeoDataFrame
 
+# Toulouse, through their website https://data.toulouse-metropole.fr/,
+# has some exportable neighborhood maps in GeoJSON format providing various demographic.
+# We will import one of them into a GeoDataframe object.
 # Read the geojson map file for Neighborhoods into a GeoDataframe object
 #tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
