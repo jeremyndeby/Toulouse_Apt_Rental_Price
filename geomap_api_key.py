@@ -37,7 +37,7 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # Here we are importing the data from the csv file
 
-neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
+neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA/data_seloger_EDAforSpatial_part3.csv')
 neighborhood_data.head()
 
 
@@ -81,8 +81,7 @@ nbhd_data.sort_values(by=['nbhd_no'])
 # We will import one of them into a GeoDataframe object.
 
 # Read the geojson map file for Realtor Neighborhoods into a GeoDataframe object
-tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
-tlse.head()
+tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 
 
 # First let's take a look at the neighborhoods (column 'libelle_des_grands_quartiers') displayed in nbhd_data Dataframe:
@@ -322,3 +321,4 @@ show(p)
 # 4. Create a Heroku app and connect to your GitHub repository containing your .py file.
 # 5. Create a Procfile and requirements.txt file. See mine in my GitHub.
 # 6. Run the app!
+
