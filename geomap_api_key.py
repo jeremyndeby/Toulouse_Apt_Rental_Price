@@ -29,14 +29,15 @@ from bokeh.io.doc import curdoc
 from bokeh.models import Slider, HoverTool, Select, GMapOptions
 from bokeh.layouts import widgetbox, row, column
 from bokeh.plotting import gmap
+import os
 
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # ## 4.1 Load and Clean the Data
 
 # Here we are importing the data from the csv file
 
-#neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
-neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA/data_seloger_EDAforSpatial_part3.csv')
+neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
 neighborhood_data.head()
 
 
@@ -80,8 +81,7 @@ nbhd_data.sort_values(by=['nbhd_no'])
 # We will import one of them into a GeoDataframe object.
 
 # Read the geojson map file for Realtor Neighborhoods into a GeoDataframe object
-#tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
-tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
+tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 tlse.head()
 
 
@@ -208,26 +208,27 @@ def make_plot(field_name):
     field_format = format_df.loc[format_df['field'] == field_name, 'format'].iloc[0]
 
     # Instantiate LinearColorMapper that linearly maps numbers in a range, into a sequence of colors.
-    color_mapper = LinearColorMapper(palette = palette, low = min_range, high = max_range)
+    color_mapper = LinearColorMapper(palette=palette, low=min_range, high=max_range)
 
     # Create color bar.
     format_tick = NumeralTickFormatter(format=field_format)
     color_bar = ColorBar(color_mapper=color_mapper, label_standoff=6, formatter=format_tick,
-    border_line_color=None, location = (0, 0))
+    border_line_color=None, location=(0, 0))
 
     # Create figure object.
+    map_options = GMapOptions(lat=43.60, lng=1.44, map_type="roadmap", zoom=12)
     verbage = format_df.loc[format_df['field'] == field_name, 'verbage'].iloc[0]
-
-    p = figure(title = verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
-             plot_height = 650, plot_width = 850,
-             toolbar_location = None)
+    p = gmap(GOOGLE_API_KEY, map_options,
+             title=verbage + ' by Neighborhood for Appartments for Rent in Toulouse (2020)',
+             plot_height=650, plot_width=850,
+             toolbar_location="below")
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
     p.axis.visible = False
 
     # Add patch renderer to figure.
-    p.patches('xs','ys', source = geosource, fill_color = {'field' : field_name, 'transform' : color_mapper},
-          line_color = 'black', line_width = 0.25, fill_alpha = 1)
+    p.patches('xs', 'ys', source=geosource, fill_color={'field': field_name, 'transform': color_mapper},
+              line_color='black', line_width=0.25, fill_alpha=0.75)
 
     # Specify color bar layout.
     p.add_layout(color_bar, 'right')
@@ -246,11 +247,11 @@ def make_plot(field_name):
 geosource = GeoJSONDataSource(geojson = json_data)
 
 # Define a sequential multi-hue color palette.
-palette = brewer['RdYlGn'][10]
-# Reds/RdYlGn
+palette = brewer['Reds'][9]
 
-# Reverse color order so that Red is highest obesity (only for Reds)
-#palette = palette[::-1]
+# Reverse color order so that dark blue is highest obesity.
+palette = palette[::-1]
+
 
 # #### The HoverTool
 # The HoverTool is a fairly straightforward Bokeh tool that allows the user to hover over an item and display values.
@@ -301,7 +302,7 @@ curdoc().add_root(layout)
 show(p)
 
 # Save the map
-outfp = r'./geomap/test4.html' # Output filepath
+#outfp = r'./geomap/test3.html' # Output filepath
 #save(p, outfp)
 
 
