@@ -28,6 +28,7 @@ In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies 
 - data_model.csv - The data used for the modeling part
 
 
+
 ## Notebooks
 There are three notebooks within this repository representing different stages of the project:
 - scraper.py - Scrape the data from SeLoger.com
@@ -43,6 +44,7 @@ Submissions will be evaluated based on RMSE (root mean squared error). Lower the
 ## Heroku Files
 - Procfile
 - requirements.txt
+- runtime.txt
 
 ## Prerequisites
 Dependencies can be installed via:
