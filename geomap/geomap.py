@@ -2,6 +2,7 @@
 # coding: utf-8
 
 ##### Create an Interactive Geographic #####
+
 # Source: The code is based on the work of Jim King available here: https://github.com/JimKing100/SF_Real_Estate_Live
 # Info: Here we modified its code to fit our dataset and to add a google map tile
 
