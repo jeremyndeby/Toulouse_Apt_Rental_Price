@@ -27,34 +27,26 @@ In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies 
 - recensement-population-2015-grands-quartiers-population.geojson - The mapping data downloaded from https://data.toulouse-metropole.fr/explore/dataset/recensement-population-2015-grands-quartiers-population/export/
 - data_model.csv - The data used for the modeling part
 
+
 ## Notebooks
-
 There are three notebooks within this repository representing different stages of the project:
-1. scraper.py - Scrape the data from SeLoger.com
-2. data_processing.py - Prepare raw data scraped from 
-3. EDA.py - EDA of the cleaned data
-4. model.py - Build and compare several models and find the best hyper-parameters for the final model
-5. geomap.py - Create an interactive Geographical Map from the cleaned dataset
-
-Also included is a pdf of a brief presentation summarizing the study and its results.
-- Toulouse_Map_Code_Final.py - The colab mapping code for the interactive Toulouse Real Estate Map.
-- Toulouse_Map_Code_Test.py - The test colab mapping code for the interactive Toulouse Real Estate Map that skips the data cleaning.
-
+- scraper.py - Scrape the data from SeLoger.com
+- data_processing.py - Prepare raw data scraped from 
+- EDA.py - EDA of the cleaned data
+- model.py - Build and compare several models and find the best hyper-parameters for the final model
+- geomap.py - The mapping code for the interactive geographical map of Toulouse real sstate
 
 ## Metric
 Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
 
 
 ## Heroku Files
-- Toulouse_Map_Code.py - Final executable python code from Toulouse_Map_Code.ipynb
 - Procfile
 - requirements.txt
 
 ## Prerequisites
 Dependencies can be installed via:
 pip install requirements.txt
-geomap: pip install requirements_geomap.txt
-modeling: pip install requirements_modeling.txt
 
 ## Possible Improvements
 - Consolidate regularly the dataset by only scraping new listings that are not in the dataset yet
@@ -62,5 +54,4 @@ modeling: pip install requirements_modeling.txt
 - Add a widget to the interactive map to be able to select per number of rooms/bedrooms 
 
 ## Author
-Jeremy Ndeby - Creator - @jeremyndeby
-
+Jeremy Ndeby - Creator - [@jeremyndeby](https://github.com/jeremyndeby)
