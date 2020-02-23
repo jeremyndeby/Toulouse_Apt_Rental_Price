@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-##### Create an Interactive Geographic #####
+# ### Create an Interactive Geographic ### #
 
 # Source: The code is based on the work of Jim King available here: https://github.com/JimKing100/SF_Real_Estate_Live
 # Info: Here we modified its code to fit our dataset and to add a google map tile
@@ -36,11 +36,12 @@ from bokeh.plotting import gmap
 # Import google API key
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
-### Load and Clean the Data
+# ## Load and Clean the Data
 
 # Import the data
 # neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
-neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
+neighborhood_data = pd.read_csv(
+    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
 
 
 # Create a function that clean data and group by neighborhood
@@ -81,7 +82,10 @@ def neighborhood_data_func():
     return nbhd_data
 
 
-### Prepare the mapping data and GeoDataFrame
+nbhd_data = neighborhood_data_func()
+
+
+# ## Prepare the mapping data and GeoDataFrame
 
 # Toulouse, through their website https://data.toulouse-metropole.fr/,
 # has some exportable neighborhood maps in GeoJSON format providing various demographic.
@@ -114,6 +118,7 @@ nbhd_dict = {'3155507': 'n1_2', '3155533': 'n2_3', '3155502': 'n1_1', '3155532':
              '3155503': 'n1_1', '3155559': 'n6_1', '3155513': 'n5_3', '3155555': 'n6_4',
              '3155524': 'n5_2', '3155517': 'n3_2', '3155544': 'n4_2', '3155550': 'n6_4'}
 
+
 #  Create a function that transform the mapping data
 def tlse_data_func():
     # Create a neighborhood name from the dictionary neighborhood_dict
@@ -134,7 +139,10 @@ def tlse_data_func():
     return tlse_agg
 
 
-### Create colorbar formatting lookup table
+tlse_agg = tlse_data_func()
+
+
+# ## Create colorbar formatting lookup table
 
 # This dictionary contains the formatting for the data in the plots
 format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent'),
@@ -151,13 +159,10 @@ format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent
 format_df = pd.DataFrame(format_data, columns=['field', 'min_range', 'max_range', 'format', 'verbage'])
 
 
-### Create the Interactive Plot
+# ## Create the Interactive Plot
 
 # Create a function that merges the neighborhood data with the mapping data and returns json_data
 def json_data():
-    nbhd_data = neighborhood_data_func()
-    tlse_agg = tlse_data_func()
-
     # Merge the GeoDataframe object (tlse_agg) with the neighborhood summary data (nbhd_data)
     merged = pd.merge(tlse_agg, nbhd_data, on='nbhd_no', how='left')
 
@@ -187,6 +192,7 @@ def update_plot(attr, old, new):
 
     # Update the data
     geosource.geojson = new_data
+
 
 # Create a plotting function
 def make_plot(field_name):
@@ -228,7 +234,7 @@ def make_plot(field_name):
     return p
 
 
-### Main Code for Interactive Map
+# ## Main Code for Interactive Map
 
 # Input geojson source that contains features for plotting for initial criteria Median_Rent
 geosource = GeoJSONDataSource(geojson=json_data())
@@ -268,8 +274,7 @@ select.on_change('value', update_plot)
 layout = column(p, widgetbox(select))
 curdoc().add_root(layout)
 
-
-### Test
+# ## Test
 # Show the map
 # show(p)
 
