@@ -13,46 +13,41 @@ In summary, the aims of this project are:
 
 
 ## Interactive Map
-The interactive chart below provides details on Toulouse apartments for rent currently available. The chart breaks down the apartments for rent by Median Sales Price, Minimum Income Required, Average Sales Price, Average Sales Price Per Square Foot, Average Square Footage and Number of Sales all by neighborhood.
+The interactive chart below provides details on Toulouse apartments for rent currently available. 
+The chart breaks down the apartments for rent by Median Rental Price, Average Rental Price, Median Area in Square Meters, Average Area in Square Meters, Median Rental Price per Square Meter, Average Rental Price per Square Meter, Number of Apartments for Rent
 
 [Interactive Chart of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
 
 
 ## Data: A data directory
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
-- tttt.csv - The raw data scraped from https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0 for all currently available apartments for rent in Toulouse, France.
-- data_seloger_EDA_part3.csv - The cleaned data after processing and cleaning steps.
-- data_seloger_EDAforSpatial_part3.csv - The cleaned dataset to use for the mapping part.
-- recensement-population-2015-grands-quartiers-population.geojson - The mapping data downloaded from https://data.toulouse-metropole.fr/explore/dataset/recensement-population-2015-grands-quartiers-population/export/
+- data_seloger_raw.csv - The raw data scraped from [SeLoger.com](https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0) for all currently available apartments for rent in Toulouse, France.
+- data_seloger_clean.csv - The cleaned data after processing and cleaning steps.
+- data_geomap.csv - The data use for the geo mapping part.
+- recensement-population-2015-grands-quartiers-population.geojson - The mapping data downloaded from [data.toulouse-metropole.fr](https://data.toulouse-metropole.fr/explore/dataset/recensement-population-2015-grands-quartiers-population/export/)
+- data_model.csv - The data used for the modeling part
+
 
 ## Notebooks
-
 There are three notebooks within this repository representing different stages of the project:
-1. scraper.py - Scrape the data from SeLoger.com
-2. data_processing.py - Prepare raw data scraped from 
-3. EDA.py - EDA of the cleaned data
-4. model.py - Build and compare several models and find the best hyper-parameters for the final model
-5. geomap.py - Create an interactive Geographical Map from the cleaned dataset
-
-Also included is a pdf of a brief presentation summarizing the study and its results.
-- Toulouse_Map_Code_Final.py - The colab mapping code for the interactive Toulouse Real Estate Map.
-- Toulouse_Map_Code_Test.py - The test colab mapping code for the interactive Toulouse Real Estate Map that skips the data cleaning.
-
+- scraper.py - Scrape the data from SeLoger.com
+- data_processing.py - Prepare raw data scraped from 
+- EDA.py - EDA of the cleaned data
+- model.py - Build and compare several models and find the best hyper-parameters for the final model
+- geomap.py - The mapping code for the interactive geographical map of Toulouse real sstate
 
 ## Metric
 Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
 
 
 ## Heroku Files
-- Toulouse_Map_Code.py - Final executable python code from Toulouse_Map_Code.ipynb
 - Procfile
 - requirements.txt
+- runtime.txt
 
 ## Prerequisites
 Dependencies can be installed via:
 pip install requirements.txt
-geomap: pip install requirements_geomap.txt
-modeling: pip install requirements_modeling.txt
 
 ## Possible Improvements
 - Consolidate regularly the dataset by only scraping new listings that are not in the dataset yet
@@ -60,5 +55,4 @@ modeling: pip install requirements_modeling.txt
 - Add a widget to the interactive map to be able to select per number of rooms/bedrooms 
 
 ## Author
-Jeremy Ndeby - Creator - @jeremyndeby
-
+Jeremy Ndeby - Creator - [@jeremyndeby](https://github.com/jeremyndeby)
