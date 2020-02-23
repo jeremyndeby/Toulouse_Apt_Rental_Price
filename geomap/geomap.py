@@ -40,8 +40,7 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # Import the data
 # neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
-neighborhood_data = pd.read_csv(
-    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_geomap.csv')
+neighborhood_data = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
 
 
 # Create a function that clean data and group by neighborhood
