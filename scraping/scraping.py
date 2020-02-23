@@ -2,48 +2,39 @@
 # coding: utf-8
 
 
+# ### Data scraping workflow with Beautiful Soup and Selenium ### #
 
-# ### Scraping with Beautiful Soup and Selenium ### #
-
-# In[17]:
-
-
-#import os
-#import random
-#import time
-
-#import numpy as np
-#import pandas as pd
-#import seaborn as sns
-#from bs4 import BeautifulSoup
-
-#sns.set()
-
-#from selenium import webdriver
-#import sys
-
-# In[19]:
+# Source: The code is based on the work of Ben Sturm available here: https://medium.com/@ben.sturm/scraping-house-listing-data-using-selenium-and-beautiful-soup-1cbb94ba9492
+# Info: Here we modified its code to match the characteristics of the website SeLoger.com
 
 
-pip freeze > requirements.txt
+# Import libraries
+import os
+import random
+import sys
+import time
+
+import numpy as np
+import pandas as pd
+from bs4 import BeautifulSoup
+from selenium import webdriver
+
+#pip freeze > requirements.txt
 
 
-# In[2]:
-
-
-chromedriver = "C:/Users/jerem/Anaconda3/envs/environment-deep-learning-cookbook/Lib/site-packages/notebook/tests/selenium/chromedriver_win32/chromedriver" # path to the chromedriver executable
+# Instantiate a WebDriver object
+# We need to specify the chromedriver location specific to our computer.
+chromedriver = "C:/Users/jerem/Anaconda3/envs/environment-deep-learning-cookbook/Lib/site-packages/notebook/tests/selenium/chromedriver_win32/chromedriver"
 chromedriver = os.path.expanduser(chromedriver)
 print('chromedriver path: {}'.format(chromedriver))
 sys.path.append(chromedriver)
-
 driver = webdriver.Chrome(chromedriver)
 
-
-# In[3]:
-
-# SeLoger URL for listings in Toulouse
+# Specify the URL of the main SeLoger.com homepage
 seloger_toulouse_url = 'https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg='
 
+
+# Create a function that returns a list of URLs of all pages
 def get_page_links(url, number_of_pages):
     page_links=[] # Create a list of pages links
     for i in range(1,number_of_pages+1):
@@ -51,16 +42,11 @@ def get_page_links(url, number_of_pages):
         page_links.append(j)
     return page_links
 
-#page_links = get_page_links(seloger_toulouse_url,3) 
 
-
-# In[4]:
-
-
-def get_appartment_links(pages, driver):
-    
+# Create a function that returns a list of all links from all the pages
+def get_apartment_links(pages, driver):
     # Setting a list of listings links
-    appartment_links=[] 
+    apartment_links=[]
     
     # Getting length of list 
     length = len(pages) 
@@ -77,7 +63,7 @@ def get_appartment_links(pages, driver):
                 # Extract links information via the find_all function of the soup object 
                 listings = soup.find_all("a", attrs={"name": "classified-link"})
                 page_data = [row['href'] for row in listings]
-                appartment_links.append(page_data) # list of listings links
+                apartment_links.append(page_data) # list of listings links
                 
                 pages.remove(i)
 
@@ -88,30 +74,19 @@ def get_appartment_links(pages, driver):
                 print("Skipping. Connnection error")
                 time.sleep(random.randrange(300,600))
                 
-    return appartment_links
-
-
-# In[5]:
+    return apartment_links
 
 
 # Create a flatten function:
-def flatten_list(appartment_links):
-    appartment_links_flat=[]
-    for sublist in appartment_links:
+def flatten_list(apartment_links):
+    apartment_links_flat=[]
+    for sublist in apartment_links:
         for item in sublist:
-            appartment_links_flat.append(item)
-    return appartment_links_flat
-        
-#or appartment_links_flat = list(it.chain.from_iterable(appartment_links))
-
-#appartment_links_flat = flatten_list(appartment_links)
-# Check the number of links
-#len(appartment_links_flat)
+            apartment_links_flat.append(item)
+    return apartment_links_flat
 
 
-# In[6]:
-
-
+# Create a function that returns the title of the listing
 def get_title(soup):
     try:
         title = soup.title.text
@@ -119,7 +94,8 @@ def get_title(soup):
     except:
         return np.nan
 
-    
+
+# Create a function that returns the agency of the listing
 def get_agency(soup):
     try:
         agency = soup.find_all("a", class_="agence-link")
@@ -129,7 +105,8 @@ def get_agency(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the housing type of the listing
 def get_housing_type(soup):
     try:
         ht = soup.find_all("h2", class_="c-h2")
@@ -138,7 +115,8 @@ def get_housing_type(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the city of the listing
 def get_city(soup):
     try:
         city = soup.find_all("p", class_="localite")
@@ -147,7 +125,8 @@ def get_city(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the details of the listing
 def get_details(soup):
     try:
         details = soup.find_all("h1", class_="detail-title title1")
@@ -157,7 +136,8 @@ def get_details(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the rental price of the listing
 def get_rent(soup):
     try:
         rent = soup.find_all("a", class_="js-smooth-scroll-link price")
@@ -166,7 +146,9 @@ def get_rent(soup):
         return rent3
     except:
         return np.nan
-    
+
+
+# Create a function that returns the type of charges of the listing
 def get_charges(soup):
     try:
         cha = soup.find_all("sup", class_="u-thin u-300 u-black-snow")
@@ -175,7 +157,8 @@ def get_charges(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the rental price additional information of the listing
 def get_rent_info(soup):
     try:
         rent_info = soup.find_all("section", class_="categorie with-padding-bottom")
@@ -185,7 +168,8 @@ def get_rent_info(soup):
     except:
         return 'None'
     
-    
+
+# Create a function that returns all criteria of the listing
 def get_criteria(soup):
     try:
         crit = soup.find_all("section", class_="categorie")
@@ -195,7 +179,8 @@ def get_criteria(soup):
     except:
         return 'None'
     
-    
+
+# Create a function that returns the energy rating of the listing
 def get_energy_rating(soup):
     try:
         ener = soup.find_all("div", class_="info-detail")
@@ -205,7 +190,8 @@ def get_energy_rating(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the gas rating of the listing
 def get_gas_rating(soup):
     try:
         gas = soup.find_all("div", class_="info-detail")
@@ -215,7 +201,8 @@ def get_gas_rating(soup):
     except:
         return np.nan
     
-    
+
+# Create a function that returns the full raw description of the listing
 def get_description(soup):
     try:
         descr = soup.find_all(class_="sh-text-light")
@@ -225,9 +212,7 @@ def get_description(soup):
         return 'None'
 
 
-# In[7]:
-
-
+# Create a function that gets the html data from the URL specified and returns it as a Beautiful Soup object
 def get_html_data(url, driver):
     driver.get(url)
     #time.sleep(random.lognormal(0,1))
@@ -236,9 +221,8 @@ def get_html_data(url, driver):
     return soup
 
 
-# In[8]:
-
-
+# Create a function that puts all the functionality of reading in the html data and scraping the relevant fields
+# and returns a raw dataframe
 def get_apartment_data(driver,links):
     apartment_data = []
 
@@ -264,8 +248,8 @@ def get_apartment_data(driver,links):
                 description = get_description(soup)
 
                 # if listings is not available anymore then remove the listing from the list
-                if title == 'Location appartements Toulouse (31) | Louer appartements à Toulouse 31000': 
-                    print('This appartment is no longer available.')   
+                if title == 'Location appartements Toulouse (31) | Louer appartements à Toulouse 31000':
+                    print('This appartment is no longer available.')
                     links.remove(i)
 
                 # if listing not accessible (robot) then go to the next one and try again later
@@ -275,7 +259,7 @@ def get_apartment_data(driver,links):
 
                 # if access to the listing granted then extract data and remove the listing from the list
                 else:
-                    appartment_data.append([i,title,agency,housing_type,city,details,rent,charges,rent_info,
+                    apartment_data.append([i,title,agency,housing_type,city,details,rent,charges,rent_info,
                                             criteria,energy_rating,gas_rating,description]) 
                     links.remove(i)
                     print('Good! There are {} listings left to examine.'.format(len(links)))
@@ -285,50 +269,31 @@ def get_apartment_data(driver,links):
                 time.sleep(random.randrange(60,120))
      
     
-    df = pd.DataFrame(appartment_data,columns = ['link','title','agency','housing_type','city','details','rent','charges','rent_info',
+    df = pd.DataFrame(apartment_data,columns = ['link','title','agency','housing_type','city','details','rent','charges','rent_info',
                                             'criteria','energy_rating','gas_rating','description'])
-    
     return df
 
 
-# In[9]:
+# Call the functions
+page_links = get_page_links(seloger_toulouse_url,96)
+apartment_links = get_apartment_links(page_links,driver)
+apartment_links_flat = flatten_list(apartment_links)
+df_apartment = get_apartment_data(driver,apartment_links_flat)
 
 
-page_links = get_page_links(seloger_toulouse_url,96) 
-appartment_links = get_appartment_links(page_links,driver)
-appartment_links_flat = flatten_list(appartment_links)
-df_appartment = get_appartment_data(driver,appartment_links_flat)
+# Size of the dataset
+print("Initial data size is: {} ".format(df_apartment.shape))
 
 
-# In[10]:
+# ## Export the file
+df_apartment.to_csv('data_seloger_raw.csv', index=False)
+print("Data exported")
 
 
-df_appartment.shape
-
-
-# In[15]:
-
-
-df_appartment.head()
-
-
-# In[16]:
-
-
-df_appartment.to_csv('data_seloger_scraping_part1.csv',index=False)
-
-
-# Next steps for improvement:
+# ## Next steps for improvement:
 # - Rotate the user agent
 # - Rotate of proxies (proxy pool)
-# - Only extract the new listings to consolidate our data: Trier par date => afin d’avoir les offres récentes (le but étant de ne pas scraper 2 fois la même annonce, donc si 200 nouvelles annonces ont été publiées depuis hier, le scrap d’aujourd’hui doit s’arrêter quand il aura scraper ces 200 annonces et qu’il retrouve par la suite une annonce qu’il a déjà scrapé la veille)
-
-# #### References & code:
-# - https://medium.com/france-school-of-ai/web-scraping-avec-python-apprenez-%C3%A0-utiliser-beautifulsoup-proxies-et-un-faux-user-agent-d7bfb66b6556
-# - https://towardsdatascience.com/looking-for-a-house-build-a-web-scraper-to-help-you-5ab25badc83e
-# - https://medium.com/@ben.sturm/scraping-house-listing-data-using-selenium-and-beautiful-soup-1cbb94ba9492
-
-# In[ ]:
+# - Only extract the new listings to consolidate our data
 
 
 

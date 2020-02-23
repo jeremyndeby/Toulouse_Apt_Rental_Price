@@ -1,3 +1,8 @@
+beautifulsoup4
+selenium
+unidecode
+seaborn
+matplotlib
 bokeh==1.4.0
 Fiona==1.8.11
 geopandas==0.6.1

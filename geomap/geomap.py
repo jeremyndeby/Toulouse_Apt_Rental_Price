@@ -224,7 +224,7 @@ def make_plot(field_name):
 
     # Add patch renderer to figure.
     p.patches('xs', 'ys', source=geosource, fill_color={'field': field_name, 'transform': color_mapper},
-              line_color='black', line_width=0.25, fill_alpha=0.7)
+              line_color='black', line_width=0.25, fill_alpha=0.5)
 
     # Specify color bar layout.
     p.add_layout(color_bar, 'right')
