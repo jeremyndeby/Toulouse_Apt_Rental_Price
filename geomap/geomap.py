@@ -38,8 +38,7 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # ## Load and Clean the Data
 
-# Import the data
-# neighborhood_data = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/EDA/data_seloger_EDAforSpatial_part3.csv')
+# Import the cleaned data from the cleaning part
 neighborhood_data = pd.read_csv(
     'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
 
@@ -92,7 +91,6 @@ nbhd_data = neighborhood_data_func()
 # We will import one of them into a GeoDataframe object.
 
 # Read the geojson map file for Neighborhoods into a GeoDataframe object
-# tlse = geopandas.read_file(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 
 # By taking a visual look at the neighborhood names we identify

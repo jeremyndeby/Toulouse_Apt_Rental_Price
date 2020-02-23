@@ -882,7 +882,8 @@ def fill_missing_values_func(df):
 
     # - 'fees' : According to data description missing values are, if rented via a real estate agency,
     # due to a lack of information and since fees of each apartment most likely have similar fees to other apartments
-    # in its neighborhood we can fill in missing values by the median of the neighborhood if no agency, else replace with 0
+    # in its neighborhood we can fill in missing values by the median of the neighborhood if no agency,
+    # else replace with 0
     df.loc[(df['fees'].isnull()) & (df.agency == 'None'), 'fees'] = 0
     df['fees'] = df.groupby('nbhd_no')['fees'].transform(lambda x: x.fillna(x.median()))
 
@@ -952,6 +953,6 @@ def data_clean_func(df):
 df = data_clean_func(df)
 
 
-### Export the file
+# ## Export the file
 df.to_csv('data_seloger_clean.csv', index=False)
 print("Data exported")

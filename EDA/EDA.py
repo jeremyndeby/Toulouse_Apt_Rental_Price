@@ -4,42 +4,31 @@
 # ### Explanatory Data Analysis ### #
 # 
 # First of all, to guide our feature engineering, we would like to know what factors add value to an apartment?
-# From this quick online research, there are several key things that stood out:
-# - Location - location is key for high valuations, therefore having a safe, well facilitated and well positioned apartment within a good neighbourhood, is also a large contributing factor.
+# From a quick online research, there are several key things that stood out:
+# - Location - location is key for high valuations, therefore having a safe,
+#   well facilitated and well positioned apartment within a good neighbourhood, is also a large contributing factor.
 # - Size - The more space and rooms that the apartment contains, the higher the valuation.
 # - Features - A fully equipped home with extras (such as a garage) are highly desirable.
 
-# Let's import the data into the notebook from the data preparation csv file and get all the packages we need for this analysis imported into the notebook too. Here we will be showing the structure and nature of values available on the dataset
 
-# In[1]:
-
-
+# Import libraries
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
-plt.style.use(style='ggplot')
-
 from scipy import stats
 from scipy.stats import norm, skew #for some statistics
 
-pd.options.display.max_columns = None
-pd.options.display.max_rows = None
+plt.style.use(style='ggplot')
 
 
-# In[2]:
 
 
-# load dataset
-df = pd.read_csv('.csv')
-
-
-# In[3]:
-
+# Import the cleaned data from the cleaning part
+df = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
 
 # check the size of the data
-print("Data size is: {} ".format(df.shape)) 
+print("Initial data size is: {} ".format(df.shape))
 
 # first visual inspection of the df
 df.head()
