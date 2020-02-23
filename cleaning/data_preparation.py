@@ -20,7 +20,6 @@ import seaborn as sns
 import unidecode
 
 plt.style.use(style='ggplot')
-# from IPython.display import display
 
 
 # ## Import the data
