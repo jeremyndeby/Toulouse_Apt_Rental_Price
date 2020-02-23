@@ -16,21 +16,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 # Import libraries
 import pandas as pd
+import seaborn as sns
 import unidecode
 
 plt.style.use(style='ggplot')
-
 # from IPython.display import display
-# import seaborn
 
-### Import the data
+
+# ## Import the data
 # df = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/data/data_seloger_raw.csv')
-df = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_seloger_raw.csv')
+df = pd.read_csv(
+    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_seloger_raw.csv')
 
-### Quick inspection of the features
+
+# ## Quick inspection of the features
 
 # Size of the dataset
-df.shape
+print("Initial data size is: {} ".format(df.shape))
 
 #  Columns in the dataset
 print(df.columns)
@@ -142,7 +144,7 @@ for i in range(5):
 # - Neighborhood/Sector features
 
 
-### Features Extraction
+# ## Features Extraction
 
 # To facilitate the extraction of the information from the features 'details','rent_info','criteria','description'
 # we will for each of them:
@@ -151,7 +153,7 @@ for i in range(5):
 # - remove '-' characters from each string
 
 # Create a function to lower-case, remove accents and '-' characters
-def text_cleaning_func():
+def text_cleaning_func(df):
     for columns in ['details', 'rent_info', 'criteria', 'description']:
         df[columns] = [unidecode.unidecode(i) for i in df[columns]]
         df[columns] = df[columns].str.replace('-', ' ')
@@ -159,11 +161,8 @@ def text_cleaning_func():
     return df
 
 
-df = text_cleaning_func()
-
-
 # Create a function that extracts hidden features on additional rental price information
-def rent_info_features_func():
+def rent_info_features_func(df):
     # Create a renting provisions amount feature
     df['provisions'] = df['rent_info'].str.extract(
         'provisions pour charges avec regularisation annuelle [:] ([\d]{0,},?[\d]{1,}.?[\d]{0,})')
@@ -180,9 +179,6 @@ def rent_info_features_func():
     return df
 
 
-df = rent_info_features_func()
-
-
 # Create a function that returns the max between two features and drop the initial features compared
 def max_func(df, feat_criteria, feat_description):
     feat = df[[feat_criteria, feat_description]].max(axis=1)
@@ -191,7 +187,7 @@ def max_func(df, feat_criteria, feat_description):
 
 
 # Create a function that extracts hidden features related to the inside of the apartment
-def inside_features_func():
+def inside_features_func(df):
     ## APARTMENT
     # Create a total area size in square meter feature
     df['area'] = df['criteria'].str.extract('surface de ([\d]{0,},?[\d]{1,}) m2')
@@ -307,11 +303,8 @@ def inside_features_func():
     return df
 
 
-df = inside_features_func()
-
-
 # Create a function that extracts hidden features related to the outside of the apartment
-def outside_features_func():
+def outside_features_func(df):
     # Create a parking feature
     df['parking'] = df['criteria'].str.extract('([\d]{1,}) parking')
     df["parking"] = df["parking"].fillna('0')  # if nan then 0
@@ -336,19 +329,16 @@ def outside_features_func():
     return df
 
 
-df = outside_features_func()
-
-
 # Create a function that extracts hidden features related to the advantages of the apartment
-def advantages_features_func():
-    ### FURNISHED, RENOVATED
+def advantages_features_func(df):
+    ## FURNISHED, RENOVATED
     # Create a furnished feature (dummy variable)
     df['furnished'] = df['criteria'].str.contains('; meuble ;', regex=True).astype(int)
 
     # Create a renovated feature (dummy variable)
     df['renovated'] = df['criteria'].str.contains('refait a neuf', regex=True).astype(int)
 
-    ### ELEVATOR, INTERCOM, DIGITAL CODE
+    ## ELEVATOR, INTERCOM, DIGITAL CODE
     # Create an elevator feature (dummy variable)
     df['elevator'] = df['criteria'].str.contains('ascenseur', regex=True).astype(int)
 
@@ -358,7 +348,7 @@ def advantages_features_func():
     # Create a digital code feature (dummy variable)
     df['digital_code'] = df['criteria'].str.contains('digicode', regex=True).astype(int)
 
-    ### ORIENTATION, VIEW
+    ## ORIENTATION, VIEW
     # Create an orientation function
     def orientation_func(df):
         df['orientation'] = np.nan
@@ -387,7 +377,7 @@ def advantages_features_func():
     # Create a view feature (dummy variable)
     df['view'] = df['criteria'].str.contains('; vue ;', regex=True).astype(int)
 
-    ### CARETAKER, REDUCED-MOBILITY PERSONS
+    ## CARETAKER, REDUCED-MOBILITY PERSONS
     # Create a caretaker feature (dummy variable)
     df['caretaker'] = df['criteria'].str.contains('; gardien ;', regex=True).astype(int)
 
@@ -396,10 +386,7 @@ def advantages_features_func():
     return df
 
 
-df = advantages_features_func()
-
-
-# ### Neighborhood information
+#  Neighborhood information
 # Due to the lack of consistency of the descriptions we need to use
 # both websites https://www.toulouse.fr/vos-quartiers and https://fr.wikipedia.org/wiki/Quartiers_de_Toulouse
 # to help us create the right neighborhoods and sectors.
@@ -544,12 +531,8 @@ n6_4 = ['simon', 'lafourguette', 'oncopole',
         'ramee']
 
 
-# Let's now create a function to search for the keywords we identified above and return the neighborhood code:
-
-# In[34]:
-
 # Create a function that extracts the neighborhood name and code
-def neighborhood_features_func():
+def neighborhood_features_func(df):
     # Create a neighborhood function for the 'description' feature
     def neighborhood_description_func(df):
         # n1_n
@@ -713,11 +696,8 @@ def neighborhood_features_func():
     return df
 
 
-df = neighborhood_features_func()
-
-
 # Create a function that extracts the sector name and code based on the neighborhood name
-def sector_features_func():
+def sector_features_func(df):
     # Create a sector code from the dictionary neighborhood_dict
     df['sector_no'] = df['nbhd_no'].map(neighborhood_sector_dict)
 
@@ -726,20 +706,15 @@ def sector_features_func():
     return df
 
 
-df = sector_features_func()
-
 # Create a function that extracts the postal code
-def postal_features_func():
+def postal_features_func(df):
     # Create a postal code feature
     df['postal_code'] = df['description'].str.extract('(31[\d]{3,3})')
     return df
 
 
-df = postal_features_func()
-
-
 # Create a function that extracts hidden features related to public transportation around the apartment
-def transportation_features_func():
+def transportation_features_func(df):
     # Create a metro feature (dummy variable)
     df['metro'] = df['description'].str.contains('metro', regex=True).astype(int)
 
@@ -751,10 +726,7 @@ def transportation_features_func():
     return df
 
 
-df = transportation_features_func()
-
-
-### Columns Transformation
+# ## Columns Transformation
 
 # Create a function that reorder columns, drop useless ones and convert to numeric columns that can be converted
 def clean_columns_func(df):
@@ -799,21 +771,19 @@ def clean_columns_func(df):
     return df
 
 
-df = clean_columns_func(df)
-
-
-### Remove Duplicates
+# ## Remove Duplicates
 
 # As discussed in the previous part we found some duplicate entries based on the column 'link'
 # We need to delete duplicate entries in the dataset as they would affect our analysis
 # as our learning algorithm would learn from incorrect data.
 
-# Create a function that removes duplicates
+# Create a function that removes duplicate values
 def deduplicate_func(df):
     # Finding out duplicates
     uniqueRows = len(set(df.link))
     totalRows = len(df.link)
     duplicateRows = totalRows - uniqueRows
+    print("Data size before dropping duplicate values is: {} ".format(df.shape))
     print('There are {} duplicates'.format(duplicateRows))
 
     # dropping duplicate values
@@ -823,79 +793,167 @@ def deduplicate_func(df):
     return df
 
 
-df = deduplicate_func(df)
-
-
-
-
-
-
-### Remove Outliers
+# ## Remove Outliers
 
 # Outliers will sit way outside of the distribution of data points
 # and skew the distribution of the data and potential calculations.
 # Therefore we need to identify and remove them
 
 # Create a function that plot and remove outliers
-def remove_outliers_func():
-# Explore outliers
-fig, ax = plt.subplots()
-ax.scatter(df['area'], df['rent'],color='blue')
-plt.ylabel('rent', fontsize=13)
-plt.xlabel('area', fontsize=13)
-plt.show()
+def remove_outliers_func(df):
+    # Explore outliers
+    fig, ax = plt.subplots()
+    ax.scatter(df['area'], df['rent'], color='blue')
+    plt.ylabel('rent', fontsize=13)
+    plt.xlabel('area', fontsize=13)
+    plt.show()
 
-# Cleaning the dataset from its outliers
-df = df.drop(df[(df['area']<40) & (df['rent']>1500)].index)
+    # Cleaning the dataset from its outliers
+    df = df.drop(df[(df['area'] < 40) & (df['rent'] > 1500)].index)
 
-# Check data after removing outliers
-fig, ax = plt.subplots()
-ax.scatter(df['area'], df['rent'],color='blue')
-plt.ylabel('rent', fontsize=13)
-plt.xlabel('area', fontsize=13)
-plt.show()
-return df
-
-
-df = remove_outliers_func()
+    # Check data after removing outliers
+    fig, ax = plt.subplots()
+    ax.scatter(df['area'], df['rent'], color='blue')
+    plt.ylabel('rent', fontsize=13)
+    plt.xlabel('area', fontsize=13)
+    plt.show()
+    return df
 
 
+# ## Filling Missing Values
+
+# Missing values are the Data Scientists other nightmare. They can mean multiple things:
+# - A missing value may be the result of an error during the production of the dataset.
+#   Depending on where the data comes from, this could be:
+#     - a human error
+#     - a machinery error
+# - A missing value in some cases, may just mean a that a 'zero' should be present.
+#   In which case, it can be replaced by a 0.
+#   The data description provided helps to address situations like these.
+# - Otherwise, missing values represent no information.
+#   Therefore, does the fact that you don't know what value to assign an entry,
+#   mean that filling it with a 'zero' is always a good fit?
+#
+# Some algorithms do not like missing values. Some are capable of handling them, but others are not.
+# Therefore since we are using a variety of algorithms, it's best to treat them in an appropriate way.
+# If you have missing values, you have two options:
+# - Delete the entire row
+# - Fill the missing entry with an imputed value
+
+# In order to treat this dataset we will cycle through each feature with missing values
+# and treat them individually based on the data description, or our judgement.
+# Through reference of the data description, this gives guidance on how to treat missing values for some columns.
+# For ones where guidance isn't clear enough, we have to use intuition.
+
+# Create a function that plot and treat missing values accordingly to each feature characteristics
+def fill_missing_values_func(df):
+    # Inspection the missing values
+    df_na = (df.isnull().sum() / len(df)) * 100
+    df_na = df_na.drop(df_na[df_na == 0].index).sort_values(ascending=False)[:30]
+    f, ax = plt.subplots(figsize=(15, 12))
+    plt.xticks(rotation='90')
+    sns.barplot(x=df_na.index, y=df_na)
+    plt.xlabel('Features', fontsize=15)
+    plt.ylabel('Percent of missing values', fontsize=15)
+    plt.title('Percent missing data by feature', fontsize=15)
+    plt.show()
+
+    # Table of the missing values
+    total = df.isnull().sum().sort_values(ascending=False)
+    percent = (df.isnull().sum() / df.isnull().count()).sort_values(ascending=False)
+    missing_data = pd.concat([total, percent], axis=1, keys=['Total', 'Percent'])
+    missing_dataSubset = missing_data[missing_data['Total'] > 0]
+    print(missing_dataSubset)
+
+    # Drop columns with more than 40% of missing values
+    df.drop(['postal_code', 'orientation', 'bldg_flr_nb', 'construction_year', 'provisions'], axis=1, inplace=True)
+
+    # - 'nbhd_no' / 'nbhd_name' : According to data description missing values are due to a lack of information
+    # Replacing missing data with the mode of 'neighborhood'
+    df['nbhd_no'] = df['nbhd_no'].fillna(df['nbhd_no'].mode()[0])
+    df['nbhd_name'] = df['nbhd_no'].map(neighborhood_dict)
+
+    # - 'sector_no' / 'sector_name' : According to data description missing values are due to a lack of information
+    # Replacing missing data with the appropriate sector according to the neighborhood the apartment is in.
+    df = sector_features_func(df)
+
+    # - 'agency': According to data description missing values are due to the the fact that
+    # some apartment are not rented via a real estate agency
+    # Replacing missing data with 'None'
+    df['agency'] = df['agency'].fillna('None')
+
+    # - 'fees' : According to data description missing values are, if rented via a real estate agency,
+    # due to a lack of information and since fees of each apartment most likely have similar fees to other apartments
+    # in its neighborhood we can fill in missing values by the median of the neighborhood if no agency, else replace with 0
+    df.loc[(df['fees'].isnull()) & (df.agency == 'None'), 'fees'] = 0
+    df['fees'] = df.groupby('nbhd_no')['fees'].transform(lambda x: x.fillna(x.median()))
+
+    # - 'deposit', 'energy_rating', 'gas_rating', 'apt_flr_nb', 'toilets', 'area': According to data description
+    # missing values are due to a lack of information and since the value of this feature for each apartment
+    # most likely have a similar value than other apartments in its neighborhood
+    # we can fill in missing values by the median of the neighborhood
+    for col in ('deposit', 'energy_rating', 'gas_rating', 'apt_flr_nb', 'toilets', 'area'):
+        df[col] = df.groupby('nbhd_no')[col].transform(lambda x: x.fillna(x.median()))
+
+    # - 'heating': According to data description missing values are due to a lack of information.
+    # We can fill in missing values by the mode 'heating' of the neighborhood
+    df['heating'] = df.groupby('nbhd_no')['heating'].transform(lambda x: x.fillna(x.mode()[0]))
+
+    # Final inspection of missing values
+    sns.heatmap(df.isnull(), yticklabels=False, cbar=False, cmap='coolwarm')
+    plt.show()
+
+    print('There are {} missing value(s) left'.format(sum(df.isnull().sum())))
+    return df
 
 
+# ## Remove human mistakes
 
-# ## 4. Verifications
-# The DataFrame now looks a lot cleaner, but we still want to make sure it’s really usable before we start our analysis. 
-# We use .describe() for this:
+# Create a function that cleans data from inconsistent values
+def remove_mistakes_func(df):
+    df.describe().head()
+    # We deduce here that the work is not finished yet. Indeed we observe the presence of some issues:
+    # - the highest energy rating indicated is above the legal maximum.
+    # - the highest gas rating indicated is above the legal maximum.
+    # - the maximum number of toilets is 10.
+    # - the maximum number of terraces places is 21.
+    # - the maximum number of parking places is 29.
+    # Drop those observations presenting human mistakes
+    df = df.drop(df[(df['energy_rating'] >= 999) | (df['gas_rating'] >= 999) | (df['toilets'] > 5) | (
+            df['terraces'] > 10) | (df['parking'] > 5)].index)
 
-# In[40]:
-
-
-df.describe()
-
-# We can deduce from the above image that the work is not finished yet. Indeed we observe the presence of some issues:
-# - the highest energy rating indicated is above the legal maximum.
-# - the highest gas rating indicated is above the legal maximum.
-# - the maximum number of toilets is 10. 
-# - the maximum number of terraces places is 21. 
-# - the maximum number of parking places is 29. 
-# 
-# In view of these inconsistencies, we can  can imagine that we are dealing here with mistakes from the agency or typos which we confirmed by checking the online descriptions of these appartments.
-# 
-# We decide to drop these observations using by .drop() in order to eliminate the last data which could have spoiled the analysis: 
-
-# In[41]:
+    df.describe().head()
+    return df
 
 
-# Cleaning the dataset from the observations with typos
-df = df.drop(df[(df['energy_rating'] >= 999) | (df['gas_rating'] >= 999) | (df['toilets'] > 5) | (
-        df['terraces'] > 10) | (df['parking'] > 5)].index)
+# ## Return Clean Data
 
-df.describe()
+# Create a final function that returns a clean dataframe based on functions created previously
+def data_clean_func(df):
+    print("Data size before data preparation is: {} ".format(df.shape))
 
-# ## 5. Saving the file
-# Once the cleaning part over, last step is to export the cleaned dataset with .to_csv() for analysis
+    df = text_cleaning_func(df)
+    df = rent_info_features_func(df)
+    df = inside_features_func(df)
+    df = outside_features_func(df)
+    df = advantages_features_func(df)
+    df = neighborhood_features_func(df)
+    df = sector_features_func(df)
+    df = postal_features_func(df)
+    df = transportation_features_func(df)
+    df = clean_columns_func(df)
+    df = deduplicate_func(df)
+    df = remove_outliers_func(df)
+    df = fill_missing_values_func(df)
+    df = remove_mistakes_func(df)
 
-# In[42]:
+    print("Data size after data preparation is: {} ".format(df.shape))
+    return df
 
 
-df.to_csv('data_seloger_preparation_part2_test.csv', index=False)
+df = data_clean_func(df)
+
+
+### Export the file
+df.to_csv('data_seloger_clean.csv', index=False)
+print("Data exported")
