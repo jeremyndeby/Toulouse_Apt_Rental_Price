@@ -299,7 +299,7 @@ appartment_links = get_appartment_links(page_links,driver)
 appartment_links_flat = flatten_list(appartment_links)
 df_appartment = get_appartment_data(driver,appartment_links_flat)
 
-
+ 
 # In[10]:
 
 

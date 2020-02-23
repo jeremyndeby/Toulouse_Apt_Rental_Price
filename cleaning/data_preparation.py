@@ -6,10 +6,9 @@
 
 # Now that the scraping part is finished, raw data extracted still need
 # some cleaning and processing before being analyzed.
-
 # Indeed as we will see below, there are some features like 'rent_info', 'criteria' or 'description'
-# that holds a lot of information that needs to be extracted. # We determined which information to extract
-# based on some visual inspection of the listings but also based on experience.
+# that holds a lot of information that needs to be extracted. We determined which information to extract
+# based on some visual inspection of the listings but also based on intuition.
 
 
 import matplotlib.pyplot as plt
