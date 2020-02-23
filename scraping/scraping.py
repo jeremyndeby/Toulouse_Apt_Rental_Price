@@ -41,7 +41,7 @@ driver = webdriver.Chrome(chromedriver)
 
 # In[3]:
 
-
+# SeLoger URL for listings in Toulouse
 seloger_toulouse_url = 'https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg='
 
 def get_page_links(url, number_of_pages):
@@ -299,7 +299,7 @@ appartment_links = get_appartment_links(page_links,driver)
 appartment_links_flat = flatten_list(appartment_links)
 df_appartment = get_appartment_data(driver,appartment_links_flat)
 
- 
+
 # In[10]:
 
 
