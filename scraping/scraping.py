@@ -12,24 +12,18 @@
 
 
 import os
-from bs4 import BeautifulSoup
-from requests import get
-import pandas as pd
-import numpy as np
-import itertools as it
 import random
 import time
-from fake_useragent import UserAgent
-import matplotlib.pyplot as plt
+
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from bs4 import BeautifulSoup
+
 sns.set()
 
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
 import sys
-import regex as re
-
 
 # In[19]:
 
@@ -248,8 +242,8 @@ def get_html_data(url, driver):
 # In[8]:
 
 
-def get_appartment_data(driver,links):
-    appartment_data = []
+def get_apartment_data(driver,links):
+    apartment_data = []
 
     while len(links) > 0: 
         for i in links:

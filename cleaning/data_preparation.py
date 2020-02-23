@@ -12,18 +12,20 @@
 # based on some visual inspection of the listings but also based on experience.
 
 
+import matplotlib.pyplot as plt
 import numpy as np
 # Import libraries
 import pandas as pd
 import unidecode
+
+plt.style.use(style='ggplot')
 
 # from IPython.display import display
 # import seaborn
 
 ### Import the data
 # df = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/data/data_seloger_raw.csv')
-df = pd.read_csv(
-    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_seloger_raw.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_seloger_raw.csv')
 
 ### Quick inspection of the features
 
@@ -140,7 +142,7 @@ for i in range(5):
 # - Neighborhood/Sector features
 
 
-### Data Transformation
+### Features Extraction
 
 # To facilitate the extraction of the information from the features 'details','rent_info','criteria','description'
 # we will for each of them:
@@ -149,36 +151,36 @@ for i in range(5):
 # - remove '-' characters from each string
 
 # Create a function to lower-case, remove accents and '-' characters
-def text_cleaning_func(data):
+def text_cleaning_func():
     for columns in ['details', 'rent_info', 'criteria', 'description']:
-        data[columns] = [unidecode.unidecode(i) for i in data[columns]]
-        data[columns] = data[columns].str.replace('-', ' ')
-        data[columns] = data[columns].str.lower()
-    return data
+        df[columns] = [unidecode.unidecode(i) for i in df[columns]]
+        df[columns] = df[columns].str.replace('-', ' ')
+        df[columns] = df[columns].str.lower()
+    return df
 
 
-df = text_cleaning_func(df)
+df = text_cleaning_func()
 
 
-# Create a function to extract hidden features on additional rental price information
-def rent_info_features_func(data):
+# Create a function that extracts hidden features on additional rental price information
+def rent_info_features_func():
     # Create a renting provisions amount feature
-    data['provisions'] = data['rent_info'].str.extract(
+    df['provisions'] = df['rent_info'].str.extract(
         'provisions pour charges avec regularisation annuelle [:] ([\d]{0,},?[\d]{1,}.?[\d]{0,})')
-    data['provisions'] = data['provisions'].str.replace(',', '')
+    df['provisions'] = df['provisions'].str.replace(',', '')
 
     # Create a renting fees feature
-    data['fees'] = data['rent_info'].str.extract(
+    df['fees'] = df['rent_info'].str.extract(
         'honoraires ttc a la charge du locataire [:] ([\d]{0,},?[\d]{1,}.?[\d]{0,})')
-    data['fees'] = data['fees'].str.replace(',', '')
+    df['fees'] = df['fees'].str.replace(',', '')
 
     # Create a deposit amount feature
-    data['deposit'] = data['rent_info'].str.extract('depot de garantie [:] ([\d]{0,},?[\d]{1,}.?[\d]{0,})')
-    data['deposit'] = data['deposit'].str.replace(',', '')
-    return data
+    df['deposit'] = df['rent_info'].str.extract('depot de garantie [:] ([\d]{0,},?[\d]{1,}.?[\d]{0,})')
+    df['deposit'] = df['deposit'].str.replace(',', '')
+    return df
 
 
-df = rent_info_features_func(df)
+df = rent_info_features_func()
 
 
 # Create a function that returns the max between two features and drop the initial features compared
@@ -188,249 +190,223 @@ def max_func(df, feat_criteria, feat_description):
     return feat
 
 
-# Create a function to extract hidden features based on the inside of the apartment
-def inside_features_func(data):
+# Create a function that extracts hidden features related to the inside of the apartment
+def inside_features_func():
     ## APARTMENT
     # Create a total area size in square meter feature
-    data['area'] = data['criteria'].str.extract('surface de ([\d]{0,},?[\d]{1,}) m2')
-    data['area'] = data['area'].str.replace(',', '.')
+    df['area'] = df['criteria'].str.extract('surface de ([\d]{0,},?[\d]{1,}) m2')
+    df['area'] = df['area'].str.replace(',', '.')
 
     # Create a total number of rooms feature
-    data['rooms'] = data['criteria'].str.extract('([\d]{1,}) piece')
-    data["rooms"] = data["rooms"].fillna('0')  # if nan then 0
+    df['rooms'] = df['criteria'].str.extract('([\d]{1,}) piece')
+    df["rooms"] = df["rooms"].fillna('0')  # if nan then 0
 
     # Create an entrance feature (dummy variable)
-    data['entrance'] = data['criteria'].str.contains('; entree ;', regex=True).astype(int)
+    df['entrance'] = df['criteria'].str.contains('; entree ;', regex=True).astype(int)
 
     # Create a duplex feature (dummy variable)
-    data['duplex_crit'] = data['criteria'].str.contains('; duplex ;', regex=True).astype(int)
-    data['duplex_descr'] = data['description'].str.contains('; duplex ;', regex=True).astype(int)
-    data['duplex'] = max_func(data, 'duplex_crit', 'duplex_descr')
+    df['duplex_crit'] = df['criteria'].str.contains('; duplex ;', regex=True).astype(int)
+    df['duplex_descr'] = df['description'].str.contains('; duplex ;', regex=True).astype(int)
+    df['duplex'] = max_func(df, 'duplex_crit', 'duplex_descr')
 
     ## LIVING ROOM
     # Create a living room feature (dummy variable)
-    data['livingroom'] = data['criteria'].str.contains('; sejour ;', regex=True).astype(int)
+    df['livingroom'] = df['criteria'].str.contains('; sejour ;', regex=True).astype(int)
 
     # Create a total living room area size in square meter feature
-    data['livingroom_area'] = data['criteria'].str.extract('sejour de ([\d]{0,},?[\d]{1,}) m2')
-    data["livingroom_area"] = data["livingroom_area"].fillna('0')  # if nan then 0
+    df['livingroom_area'] = df['criteria'].str.extract('sejour de ([\d]{0,},?[\d]{1,}) m2')
+    df["livingroom_area"] = df["livingroom_area"].fillna('0')  # if nan then 0
 
     ## KITCHEN
     # Create an equipped kitchen feature (dummy variable)
-    data['equipped_kitchen_crit'] = data['criteria'].str.contains('cuisine equipe|cuisine americaine equipe',
+    df['equipped_kitchen_crit'] = df['criteria'].str.contains('cuisine equipe|cuisine americaine equipe',
+                                                              regex=True).astype(int)
+    df['equipped_kitchen_descr'] = df['description'].str.contains('cuisine equipe|cuisine américaine equipe',
                                                                   regex=True).astype(int)
-    data['equipped_kitchen_descr'] = data['description'].str.contains('cuisine equipe|cuisine américaine equipe',
-                                                                      regex=True).astype(int)
-    data['equipped_kitchen'] = max_func(data, 'equipped_kitchen_crit', 'equipped_kitchen_descr')
+    df['equipped_kitchen'] = max_func(df, 'equipped_kitchen_crit', 'equipped_kitchen_descr')
 
     # Create an open-plan kitchen feature (dummy variable)
-    data['openplan_kitchen_crit'] = data['criteria'].str.contains('cuisine americaine', regex=True).astype(int)
-    data['openplan_kitchen_descr'] = data['description'].str.contains('cuisine americaine', regex=True).astype(int)
-    data['openplan_kitchen'] = max_func(data, 'openplan_kitchen_crit', 'openplan_kitchen_descr')
+    df['openplan_kitchen_crit'] = df['criteria'].str.contains('cuisine americaine', regex=True).astype(int)
+    df['openplan_kitchen_descr'] = df['description'].str.contains('cuisine americaine', regex=True).astype(int)
+    df['openplan_kitchen'] = max_func(df, 'openplan_kitchen_crit', 'openplan_kitchen_descr')
 
     ## BEDROOMS
     # Create a total number of bedrooms feature
-    data['bedrooms'] = data['criteria'].str.extract('([\d]{1,}) chambre')
-    data["bedrooms"] = data["bedrooms"].fillna('0')  # if nan then 0
+    df['bedrooms'] = df['criteria'].str.extract('([\d]{1,}) chambre')
+    df["bedrooms"] = df["bedrooms"].fillna('0')  # if nan then 0
 
     ## BATHROOMS
     # Create a total number of bathrooms feature
-    data['bathrooms'] = data['criteria'].str.extract('([\d]{1,}) salle de bain')
-    data["bathrooms"] = data["bathrooms"].fillna('0')  # if nan then 0
+    df['bathrooms'] = df['criteria'].str.extract('([\d]{1,}) salle de bain')
+    df["bathrooms"] = df["bathrooms"].fillna('0')  # if nan then 0
 
     # Create a total number of shower rooms feature
-    data['shower_rooms'] = data['criteria'].str.extract('([\d]{1,}) salle d\'eau')
-    data["shower_rooms"] = data["shower_rooms"].fillna('0')  # if nan then 0
+    df['shower_rooms'] = df['criteria'].str.extract('([\d]{1,}) salle d\'eau')
+    df["shower_rooms"] = df["shower_rooms"].fillna('0')  # if nan then 0
 
     ## TOILETS
     # Create a total number of toilets feature
-    data['toilets'] = data['criteria'].str.extract('([\d]{1,}) toilette')
+    df['toilets'] = df['criteria'].str.extract('([\d]{1,}) toilette')
 
     # Create a separate toilet feature (dummy variable)
-    data['separate_toilet_crit'] = data['criteria'].str.contains('toilettes separe', regex=True).astype(int)
-    data['separate_toilet_descr'] = data['description'].str.contains('toilettes separe', regex=True).astype(int)
-    data['separate_toilet'] = max_func(data, 'separate_toilet_crit', 'separate_toilet_descr')
+    df['separate_toilet_crit'] = df['criteria'].str.contains('toilettes separe', regex=True).astype(int)
+    df['separate_toilet_descr'] = df['description'].str.contains('toilettes separe', regex=True).astype(int)
+    df['separate_toilet'] = max_func(df, 'separate_toilet_crit', 'separate_toilet_descr')
 
     ## BALCONY, TERRACES
     # Create a total number of balconies feature
-    data['balcony'] = data['criteria'].str.extract('([\d]{1,}) balcon')
-    data["balcony"] = data["balcony"].fillna('0')  # if nan then 0
+    df['balcony'] = df['criteria'].str.extract('([\d]{1,}) balcon')
+    df["balcony"] = df["balcony"].fillna('0')  # if nan then 0
 
     # Create a total number of terraces feature
-    data['terraces'] = data['criteria'].str.extract('([\d]{1,}) terrasse')
-    data["terraces"] = data["terraces"].fillna('0')  # if nan then 0
+    df['terraces'] = df['criteria'].str.extract('([\d]{1,}) terrasse')
+    df["terraces"] = df["terraces"].fillna('0')  # if nan then 0
 
     ## WOODEN FLOOR, FIREPLACE, INSIDE STORAGE
     # Create a wooden floor feature (dummy variable)
-    data['wooden_floor'] = data['criteria'].str.contains('parquet', regex=True).astype(int)
+    df['wooden_floor'] = df['criteria'].str.contains('parquet', regex=True).astype(int)
 
     # Create a fireplace feature (dummy variable)
-    data['fireplace_crit'] = data['criteria'].str.contains('cheminee', regex=True).astype(int)
-    data['fireplace_descr'] = data['description'].str.contains('cheminee', regex=True).astype(int)
-    data['fireplace'] = max_func(data, 'fireplace_crit', 'fireplace_descr')
+    df['fireplace_crit'] = df['criteria'].str.contains('cheminee', regex=True).astype(int)
+    df['fireplace_descr'] = df['description'].str.contains('cheminee', regex=True).astype(int)
+    df['fireplace'] = max_func(df, 'fireplace_crit', 'fireplace_descr')
 
     # Create an inside storage feature (dummy variable)
-    data['storage'] = data['criteria'].str.contains('rangement', regex=True).astype(int)
+    df['storage'] = df['criteria'].str.contains('rangement', regex=True).astype(int)
 
     ## HEATING
     # Create an heating function
-    def heating_func(data):
-        data['heating'] = np.nan
-        if 'chauffage gaz collectif' in data['criteria'] or 'chauffage au gaz collectif' in data[
-            'criteria'] or 'chauffage gaz collectif' in data['description'] or 'chauffage au gaz collectif' in data[
+    def heating_func(df):
+        df['heating'] = np.nan
+        if 'chauffage gaz collectif' in df['criteria'] or 'chauffage au gaz collectif' in df[
+            'criteria'] or 'chauffage gaz collectif' in df['description'] or 'chauffage au gaz collectif' in df[
             'description']:
             return 'collective_gas'
-        elif 'chauffage individuel gaz' in data['criteria'] or 'chauffage individuel au gaz' in data[
-            'criteria'] or 'chauffage individuel gaz' in data['description'] or 'chauffage individuel au gaz' in data[
+        elif 'chauffage individuel gaz' in df['criteria'] or 'chauffage individuel au gaz' in df[
+            'criteria'] or 'chauffage individuel gaz' in df['description'] or 'chauffage individuel au gaz' in df[
             'description']:
             return 'individual_gas'
-        elif 'chauffage gaz' in data['criteria'] or 'chauffage au gaz' in data['criteria'] or 'chauffage gaz' in data[
-            'description'] or 'chauffage au gaz' in data['description']:
+        elif 'chauffage gaz' in df['criteria'] or 'chauffage au gaz' in df['criteria'] or 'chauffage gaz' in df[
+            'description'] or 'chauffage au gaz' in df['description']:
             return 'gas'
-        elif 'chauffage individuel electrique' in data['criteria'] or 'chauffage electrique' in data[
-            'criteria'] or 'chauffage individuel electrique' in data['description'] or 'chauffage electrique' in data[
+        elif 'chauffage individuel electrique' in df['criteria'] or 'chauffage electrique' in df[
+            'criteria'] or 'chauffage individuel electrique' in df['description'] or 'chauffage electrique' in df[
             'description']:
             return 'individual_electrical'
-        elif 'chauffage individuel' in data['criteria'] or 'chauffage individuel' in data['description']:
+        elif 'chauffage individuel' in df['criteria'] or 'chauffage individuel' in df['description']:
             return 'individual'
-        elif 'chauffage central' in data['criteria'] or 'chauffage central' in data['description']:
+        elif 'chauffage central' in df['criteria'] or 'chauffage central' in df['description']:
             return 'central'
-        elif 'chauffage sol' in data['criteria'] or 'chauffage au sol' in data['criteria'] or 'chauffage sol' in data[
-            'description'] or 'chauffage au sol' in data['description']:
+        elif 'chauffage sol' in df['criteria'] or 'chauffage au sol' in df['criteria'] or 'chauffage sol' in df[
+            'description'] or 'chauffage au sol' in df['description']:
             return 'central'
         else:
-            return data['heating']
+            return df['heating']
 
-    data['heating'] = data.apply(heating_func, axis=1)
-    return data
-
-
-df = inside_features_func(df)
+    df['heating'] = df.apply(heating_func, axis=1)
+    return df
 
 
-# Create a function to extract hidden features based on the outside of the apartment
-def outside_features_func(data):
+df = inside_features_func()
+
+
+# Create a function that extracts hidden features related to the outside of the apartment
+def outside_features_func():
     # Create a parking feature
-    data['parking'] = data['criteria'].str.extract('([\d]{1,}) parking')
-    data["parking"] = data["parking"].fillna('0')  # if nan then 0
+    df['parking'] = df['criteria'].str.extract('([\d]{1,}) parking')
+    df["parking"] = df["parking"].fillna('0')  # if nan then 0
 
     # Create a cellar feature (dummy variable)
-    data['cellar'] = data['criteria'].str.contains('; cave ;', regex=True).astype(int)
+    df['cellar'] = df['criteria'].str.contains('; cave ;', regex=True).astype(int)
 
     # Create a pool feature (dummy variable)
-    data['pool_crit'] = data['criteria'].str.contains('piscine', regex=True).astype(int)
-    data['pool_descr'] = data['description'].str.contains('piscine', regex=True).astype(int)
-    data['pool'] = max_func(data, 'pool_crit', 'pool_descr')
+    df['pool_crit'] = df['criteria'].str.contains('piscine', regex=True).astype(int)
+    df['pool_descr'] = df['description'].str.contains('piscine', regex=True).astype(int)
+    df['pool'] = max_func(df, 'pool_crit', 'pool_descr')
 
     # Create a year of construction of the building feature
-    data['construction_year'] = data['criteria'].str.extract('annee de construction ([\d]{4,4})')
+    df['construction_year'] = df['criteria'].str.extract('annee de construction ([\d]{4,4})')
 
     # Create the total number of floors of the building feature
-    data['bldg_flr_nb'] = data['criteria'].str.extract('batiment de ([\d]{1,}) etage')
+    df['bldg_flr_nb'] = df['criteria'].str.extract('batiment de ([\d]{1,}) etage')
 
     # Create the floor number of the appartment feature
-    data['apt_flr_nb'] = data['criteria'].str.extract('; au ([\d]{1,})+(?:er|eme) etage')
-    data.loc[data['criteria'].str.contains('au rez-de-chausse', case=False), 'apt_flr_nb'] = '0'
-    return data
+    df['apt_flr_nb'] = df['criteria'].str.extract('; au ([\d]{1,})+(?:er|eme) etage')
+    df.loc[df['criteria'].str.contains('au rez-de-chausse', case=False), 'apt_flr_nb'] = '0'
+    return df
 
 
-df = outside_features_func(df)
+df = outside_features_func()
 
 
-# ### Advantages
-# Let's extract, when available, advantages of the appartment such as:
-# - If the appartment is furnished or not
-# - If the appartment has been fully renovated or not
-# 
-# 
-# - If the building has an elevator or not 
-# - If the appartment has an intercom or not
-# - If the appartment has an digital code or not
-# 
-# 
-# - The orientation of the appartment
-# - If the appartment has a 'nice' view or not
-# 
-# 
-# - If the building has a caretaker
-# - If the appartment is adapted to persons with reduced mobility 
+# Create a function that extracts hidden features related to the advantages of the apartment
+def advantages_features_func():
+    ### FURNISHED, RENOVATED
+    # Create a furnished feature (dummy variable)
+    df['furnished'] = df['criteria'].str.contains('; meuble ;', regex=True).astype(int)
 
-# In[31]:
+    # Create a renovated feature (dummy variable)
+    df['renovated'] = df['criteria'].str.contains('refait a neuf', regex=True).astype(int)
 
+    ### ELEVATOR, INTERCOM, DIGITAL CODE
+    # Create an elevator feature (dummy variable)
+    df['elevator'] = df['criteria'].str.contains('ascenseur', regex=True).astype(int)
 
-### FURNISHED, RENOVATED
-# Create a furnished feature (dummy variable)
-df['furnished'] = df['criteria'].str.contains('; meuble ;', regex=True).astype(int)
+    # Create an intercom feature (dummy variable)
+    df['intercom'] = df['criteria'].str.contains('interphone', regex=True).astype(int)
 
-# Create a renovated feature (dummy variable)
-df['renovated'] = df['criteria'].str.contains('refait a neuf', regex=True).astype(int)
+    # Create a digital code feature (dummy variable)
+    df['digital_code'] = df['criteria'].str.contains('digicode', regex=True).astype(int)
 
-### ELEVATOR, INTERCOM, DIGITAL CODE
-# Create an elevator feature (dummy variable)
-df['elevator'] = df['criteria'].str.contains('ascenseur', regex=True).astype(int)
+    ### ORIENTATION, VIEW
+    # Create an orientation function
+    def orientation_func(df):
+        df['orientation'] = np.nan
+        if 'orientation nord, est' in df['criteria'] or 'orientation est, nord' in df['criteria']:
+            return 'north_est'
+        elif 'orientation nord, ouest' in df['criteria'] or 'orientation ouest, nord' in df['criteria']:
+            return 'north_west'
+        elif 'orientation sud, est' in df['criteria'] or 'orientation est, sud' in df['criteria']:
+            return 'south_est'
+        elif 'orientation sud, ouest' in df['criteria'] or 'orientation ouest, sud' in df['criteria']:
+            return 'south_west'
 
-# Create an intercom feature (dummy variable)
-df['intercom'] = df['criteria'].str.contains('interphone', regex=True).astype(int)
+        elif 'orientation nord' in df['criteria']:
+            return 'north'
+        elif 'orientation sud' in df['criteria']:
+            return 'south'
+        elif 'orientation est' in df['criteria']:
+            return 'est'
+        elif 'orientation ouest' in df['criteria']:
+            return 'west'
+        else:
+            return df['orientation']
 
-# Create a digital code feature (dummy variable)
-df['digital_code'] = df['criteria'].str.contains('digicode', regex=True).astype(int)
+    df['orientation'] = df.apply(orientation_func, axis=1)
 
+    # Create a view feature (dummy variable)
+    df['view'] = df['criteria'].str.contains('; vue ;', regex=True).astype(int)
 
-### ORIENTATION, VIEW
-# Create an orientation function
-def orientation_func(df):
-    df['orientation'] = np.nan
-    if 'orientation nord, est' in df['criteria'] or 'orientation est, nord' in df['criteria']:
-        return 'north_est'
-    elif 'orientation nord, ouest' in df['criteria'] or 'orientation ouest, nord' in df['criteria']:
-        return 'north_west'
-    elif 'orientation sud, est' in df['criteria'] or 'orientation est, sud' in df['criteria']:
-        return 'south_est'
-    elif 'orientation sud, ouest' in df['criteria'] or 'orientation ouest, sud' in df['criteria']:
-        return 'south_west'
+    ### CARETAKER, REDUCED-MOBILITY PERSONS
+    # Create a caretaker feature (dummy variable)
+    df['caretaker'] = df['criteria'].str.contains('; gardien ;', regex=True).astype(int)
 
-    elif 'orientation nord' in df['criteria']:
-        return 'north'
-    elif 'orientation sud' in df['criteria']:
-        return 'south'
-    elif 'orientation est' in df['criteria']:
-        return 'est'
-    elif 'orientation ouest' in df['criteria']:
-        return 'west'
-    else:
-        return df['orientation']
+    # Create a reduced mobility feature (dummy variable)
+    df['reduced_mobility'] = df['criteria'].str.contains('adapte pmr', regex=True).astype(int)
+    return df
 
 
-df['orientation'] = df.apply(orientation_func, axis=1)
+df = advantages_features_func()
 
-# Create a view feature (dummy variable)
-df['view'] = df['criteria'].str.contains('; vue ;', regex=True).astype(int)
-
-### CARETAKER, REDUCED-MOBILITY PERSONS
-# Create a caretaker feature (dummy variable)
-df['caretaker'] = df['criteria'].str.contains('; gardien ;', regex=True).astype(int)
-
-# Create a reduced mobility feature (dummy variable)
-df['reduced_mobility'] = df['criteria'].str.contains('adapte pmr', regex=True).astype(int)
 
 # ### Neighborhood information
-# 
-# Due to the lack of consistency of the descriptions we need to use the websites https://www.toulouse.fr/vos-quartiers and https://fr.wikipedia.org/wiki/Quartiers_de_Toulouse to help us create the right neighborhoods and sectors. We learn from those websites that Toulouse is divided in 6 different sectors and each one of them is also divided in 3 to 4 neighborhoods for a total of 20 different neighborhoods.
-# 
-# Let's extract, when available, information on the neighborhood of the appartment such as:
-# - The name of the neighborhood of the appartment
-# - The name of the sector of the appartment: Each sector regroups 1 to 8 neighbourhoods
-# - The postal code of the appartment
-# - If the appartment is close to a metro station or not
-# - If the appartment is close to a tram station or not
-# - If the appartment is close to a bus station or not
+# Due to the lack of consistency of the descriptions we need to use
+# both websites https://www.toulouse.fr/vos-quartiers and https://fr.wikipedia.org/wiki/Quartiers_de_Toulouse
+# to help us create the right neighborhoods and sectors.
+# We learn from those websites that Toulouse is divided in 6 different sectors
+# and each one of them is also divided in 3 to 4 neighborhoods for a total of 20 different neighborhoods.
 
-# We first will create some dictionaries to enable us to retrieve easily neighborhood and sector codes and names:
-
-# In[32]:
-
-
-# Create a dictionary to change the neighborhood codes to neighborhood names.
+# Create a dictionary to change the neighborhood codes to neighborhood names
 neighborhood_dict = {'n1_1': 'Capitole - Arnaud Bernard - Carmes',
                      'n1_2': 'Amidonniers - Compans Caffarelli',
                      'n1_3': 'Les Chalets/Bayard/Belfort  Saint-Aubin/Dupuy',
@@ -452,7 +428,7 @@ neighborhood_dict = {'n1_1': 'Capitole - Arnaud Bernard - Carmes',
                      'n6_3': 'Mirail- Université - Reynerie - Bellefontaine',
                      'n6_4': 'Saint Simon - Lafourguette - Oncopole'}
 
-# Create a dictionary to change the neighborhood codes to sector codes.
+# Create a dictionary to change the neighborhood codes to sector codes
 neighborhood_sector_dict = {'n1_1': 'sector1',
                             'n1_2': 'sector1',
                             'n1_3': 'sector1',
@@ -474,7 +450,7 @@ neighborhood_sector_dict = {'n1_1': 'sector1',
                             'n6_3': 'sector6',
                             'n6_4': 'sector6'}
 
-# Create a dictionary to change the sector codes to sector names.
+# Create a dictionary to change the sector codes to sector names
 sector_dict = {'sector1': 'TOULOUSE CENTRE',
                'sector2': 'TOULOUSE RIVE GAUCHE',
                'sector3': 'TOULOUSE NORD',
@@ -482,13 +458,8 @@ sector_dict = {'sector1': 'TOULOUSE CENTRE',
                'sector5': 'TOULOUSE SUD EST',
                'sector6': 'TOULOUSE OUEST'}
 
-# Here we assign for each neighborhood some keywords that we will looking for in the features 'description' and 'details':
-
-# In[33]:
-
-
-### NEIGHBORHOOD
-
+# Below we assign for each neighborhood some keywords
+# that we will look for in both features 'description' and 'details'
 # Create the neighborhoods keywords lists
 ## Secteur 1: TOULOUSE CENTRE
 # 1.1 : Capitole - Arnaud Bernard - Carmes
@@ -502,10 +473,8 @@ n1_1 = ['capitole', 'bernard', 'carmes',
         'st pierre', 'saint pierre', 'francois verdier', 'la daurade', 'lascrosses',
         'saint etienne', 'st etienne', 'alsace lorraine', 'pont neuf', 'alsace', 'lorraine',
         'place de la bourse', 'toulouse centre', 'hyper centre', 'hypercentre']
-
 n1_2 = ['amidonniers', 'compans', 'caffarelli',
         'bazacle', 'chapou', 'heracles', 'sébastopol', 'barcelone', 'brienne']
-
 n1_3 = ['chalets', 'bayard', 'belfort', 'aubin', 'dupuy',
         'concorde', 'raymond iv', 'belfort', 'gabriel peri', 'colombette', 'grand rond',
         'honore serres', 'matabiau']
@@ -519,13 +488,10 @@ n1_3 = ['chalets', 'bayard', 'belfort', 'aubin', 'dupuy',
 n2_1 = ['cyprien',
         'bourrassol', 'la grave', 'ravelin', 'roguet', ' lucie', 'teinturiers', 'patte d\'oie', 'patte oie',
         'fer a cheval', 'abattoirs', 'toulouse rive gauche']
-
 n2_2 = ['croix de pierre', 'route d\'espagne',
         'becanne', 'la digue', 'la pointe', 'avenue de muret', 'oustalous', 'deodat de severac']
-
 n2_3 = ['lestang', 'arenes', 'bagatelle', ' papus', 'tabar', 'bordelongue', 'mermoz', 'farouette',
         'arenes', 'bigorre', 'lambert', ' loire', 'morvan', ' tellier', ' touraine', 'vestrepain', 'hippodrome']
-
 n2_4 = ['casselardit', 'fontaine-bayonne', 'fontaine bayonne', 'cartoucherie',
         'barrière de bayonne', 'biarritz', 'les fontaines', 'zenith']
 
@@ -536,10 +502,8 @@ n2_4 = ['casselardit', 'fontaine-bayonne', 'fontaine bayonne', 'cartoucherie',
 
 n3_1 = ['minimes', 'barriere de paris', 'jumeaux',
         'la vache', 'canal du midi']
-
 n3_2 = ['deniers', 'ginestous', 'lalande',
         'route de launaguet']
-
 n3_3 = ['trois cocus', '3 cocus', 'borderouge', 'croix daurade', 'paleficat', 'grand selve',
         'izards']
 
@@ -549,10 +513,8 @@ n3_3 = ['trois cocus', '3 cocus', 'borderouge', 'croix daurade', 'paleficat', 'g
 # 4.3 : Bonhoure - Guilheméry - Château de l'Hers - Limayrac - Côte Pavée
 
 n4_1 = ['lapujade', 'bonnefoy', 'periole', 'marengo', 'la colonne']
-
 n4_2 = ['jolimont', 'soupetard', 'roseraie', 'gloire', 'gramont', 'amouroux',
         'argoulets']
-
 n4_3 = ['bonhoure', 'guilhemery', 'l\'hers', 'limayrac', 'cote pavee',
         'camille pujol', 'hers', 'grande plaine']
 
@@ -563,10 +525,8 @@ n4_3 = ['bonhoure', 'guilhemery', 'l\'hers', 'limayrac', 'cote pavee',
 
 n5_1 = ['demoiselles', 'ormeau', 'montaudran', 'la terrasse ', 'malepere',
         'exupery']
-
 n5_2 = ['rangueil', 'saouzelong', 'pech david', 'pouvourville',
         'faculte de pharmacie', 'paul sabatier', 'ramonville', 'rangeuil', 'palays', 'jules julien']
-
 n5_3 = ['michel', 'busca', 'empalot', ' agne',
         'palais de justice', 'des plantes', 'ramier']
 
@@ -576,14 +536,10 @@ n5_3 = ['michel', 'busca', 'empalot', ' agne',
 # 6.3 : Mirail- Université - Reynerie - Bellefontaine
 # 6.4 : Saint Simon - Lafourguette - Oncopole
 
-
 n6_1 = ['arenes romaines', 'martin ', 'du touch', 'purpan']
-
 n6_2 = ['lardenne', 'pradettes', 'basso',
         'bordeblanche', 'cepiere']
-
 n6_3 = ['mirail', 'reynerie', 'bellefontaine']
-
 n6_4 = ['simon', 'lafourguette', 'oncopole',
         'ramee']
 
@@ -592,258 +548,326 @@ n6_4 = ['simon', 'lafourguette', 'oncopole',
 
 # In[34]:
 
+# Create a function that extracts the neighborhood name and code
+def neighborhood_features_func():
+    # Create a neighborhood function for the 'description' feature
+    def neighborhood_description_func(df):
+        # n1_n
+        for i in n1_1:
+            if i in df['description']:
+                return 'n1_1'
+        for i in n1_2:
+            if i in df['description']:
+                return 'n1_2'
+        for i in n1_3:
+            if i in df['description']:
+                return 'n1_3'
 
-# Create a neighborhood function for the 'description' feature
-def neighborhood_description_func(df):
-    # n1_n
-    for i in n1_1:
-        if i in df['description']:
-            return 'n1_1'
-    for i in n1_2:
-        if i in df['description']:
-            return 'n1_2'
-    for i in n1_3:
-        if i in df['description']:
-            return 'n1_3'
+        # n2_n
+        for i in n2_1:
+            if i in df['description']:
+                return 'n2_1'
+        for i in n2_2:
+            if i in df['description']:
+                return 'n2_2'
+        for i in n2_3:
+            if i in df['description']:
+                return 'n2_3'
+        for i in n2_4:
+            if i in df['description']:
+                return 'n2_4'
 
-            # n2_n
-    for i in n2_1:
-        if i in df['description']:
-            return 'n2_1'
-    for i in n2_2:
-        if i in df['description']:
-            return 'n2_2'
-    for i in n2_3:
-        if i in df['description']:
-            return 'n2_3'
-    for i in n2_4:
-        if i in df['description']:
-            return 'n2_4'
+        # n3_n
+        for i in n3_1:
+            if i in df['description']:
+                return 'n3_1'
+        for i in n3_2:
+            if i in df['description']:
+                return 'n3_2'
+        for i in n3_3:
+            if i in df['description']:
+                return 'n3_3'
 
-    # n3_n
-    for i in n3_1:
-        if i in df['description']:
-            return 'n3_1'
-    for i in n3_2:
-        if i in df['description']:
-            return 'n3_2'
-    for i in n3_3:
-        if i in df['description']:
-            return 'n3_3'
+        # n4_n
+        for i in n4_1:
+            if i in df['description']:
+                return 'n4_1'
+        for i in n4_2:
+            if i in df['description']:
+                return 'n4_2'
+        for i in n4_3:
+            if i in df['description']:
+                return 'n4_3'
 
-            # n4_n
-    for i in n4_1:
-        if i in df['description']:
-            return 'n4_1'
-    for i in n4_2:
-        if i in df['description']:
-            return 'n4_2'
-    for i in n4_3:
-        if i in df['description']:
-            return 'n4_3'
+        # n5_n
+        for i in n5_1:
+            if i in df['description']:
+                return 'n5_1'
+        for i in n5_2:
+            if i in df['description']:
+                return 'n5_2'
+        for i in n5_3:
+            if i in df['description']:
+                return 'n5_3'
 
-            # n5_n
-    for i in n5_1:
-        if i in df['description']:
-            return 'n5_1'
-    for i in n5_2:
-        if i in df['description']:
-            return 'n5_2'
-    for i in n5_3:
-        if i in df['description']:
-            return 'n5_3'
+        # n6_n
+        for i in n6_1:
+            if i in df['description']:
+                return 'n6_1'
+        for i in n6_2:
+            if i in df['description']:
+                return 'n6_2'
+        for i in n6_3:
+            if i in df['description']:
+                return 'n6_3'
+        for i in n6_4:
+            if i in df['description']:
+                return 'n6_4'
 
-            # n6_n
-    for i in n6_1:
-        if i in df['description']:
-            return 'n6_1'
-    for i in n6_2:
-        if i in df['description']:
-            return 'n6_2'
-    for i in n6_3:
-        if i in df['description']:
-            return 'n6_3'
-    for i in n6_4:
-        if i in df['description']:
-            return 'n6_4'
+    # Create a neighborhood function for the 'details' feature
+    def neighborhood_details_func(df):
+        # n1_n
+        for i in n1_1:
+            if i in df['details']:
+                return 'n1_1'
+        for i in n1_2:
+            if i in df['details']:
+                return 'n1_2'
+        for i in n1_3:
+            if i in df['details']:
+                return 'n1_3'
 
+        # n2_n
+        for i in n2_1:
+            if i in df['details']:
+                return 'n2_1'
+        for i in n2_2:
+            if i in df['details']:
+                return 'n2_2'
+        for i in n2_3:
+            if i in df['details']:
+                return 'n2_3'
+        for i in n2_4:
+            if i in df['details']:
+                return 'n2_4'
 
-# Create a neighborhood function for the 'details' feature
-def neighborhood_details_func(df):
-    # n1_n
-    for i in n1_1:
-        if i in df['details']:
-            return 'n1_1'
-    for i in n1_2:
-        if i in df['details']:
-            return 'n1_2'
-    for i in n1_3:
-        if i in df['details']:
-            return 'n1_3'
+        # n3_n
+        for i in n3_1:
+            if i in df['details']:
+                return 'n3_1'
+        for i in n3_2:
+            if i in df['details']:
+                return 'n3_2'
+        for i in n3_3:
+            if i in df['details']:
+                return 'n3_3'
 
-            # n2_n
-    for i in n2_1:
-        if i in df['details']:
-            return 'n2_1'
-    for i in n2_2:
-        if i in df['details']:
-            return 'n2_2'
-    for i in n2_3:
-        if i in df['details']:
-            return 'n2_3'
-    for i in n2_4:
-        if i in df['details']:
-            return 'n2_4'
+        # n4_n
+        for i in n4_1:
+            if i in df['details']:
+                return 'n4_1'
+        for i in n4_2:
+            if i in df['details']:
+                return 'n4_2'
+        for i in n4_3:
+            if i in df['details']:
+                return 'n4_3'
 
-    # n3_n
-    for i in n3_1:
-        if i in df['details']:
-            return 'n3_1'
-    for i in n3_2:
-        if i in df['details']:
-            return 'n3_2'
-    for i in n3_3:
-        if i in df['details']:
-            return 'n3_3'
+        # n5_n
+        for i in n5_1:
+            if i in df['details']:
+                return 'n5_1'
+        for i in n5_2:
+            if i in df['details']:
+                return 'n5_2'
+        for i in n5_3:
+            if i in df['details']:
+                return 'n5_3'
 
-            # n4_n
-    for i in n4_1:
-        if i in df['details']:
-            return 'n4_1'
-    for i in n4_2:
-        if i in df['details']:
-            return 'n4_2'
-    for i in n4_3:
-        if i in df['details']:
-            return 'n4_3'
+        # n6_n
+        for i in n6_1:
+            if i in df['details']:
+                return 'n6_1'
+        for i in n6_2:
+            if i in df['details']:
+                return 'n6_2'
+        for i in n6_3:
+            if i in df['details']:
+                return 'n6_3'
+        for i in n6_4:
+            if i in df['details']:
+                return 'n6_4'
 
-            # n5_n
-    for i in n5_1:
-        if i in df['details']:
-            return 'n5_1'
-    for i in n5_2:
-        if i in df['details']:
-            return 'n5_2'
-    for i in n5_3:
-        if i in df['details']:
-            return 'n5_3'
+    df['nbhd_no_description'] = df.apply(neighborhood_description_func, axis=1)
+    df['nbhd_no_details'] = df.apply(neighborhood_details_func, axis=1)
 
-            # n6_n
-    for i in n6_1:
-        if i in df['details']:
-            return 'n6_1'
-    for i in n6_2:
-        if i in df['details']:
-            return 'n6_2'
-    for i in n6_3:
-        if i in df['details']:
-            return 'n6_3'
-    for i in n6_4:
-        if i in df['details']:
-            return 'n6_4'
+    # Create a unique neighborhood feature based on the remark made previously
+    df['nbhd_no'] = df['nbhd_no_description']
+    df.loc[df.nbhd_no_description.isnull(), 'nbhd_no'] = df.loc[df.nbhd_no_description.isnull(), 'nbhd_no_details']
 
+    # Drop some features
+    df.drop(['nbhd_no_description', 'nbhd_no_details'], axis=1, inplace=True)
 
-df['nbhd_no_description'] = df.apply(neighborhood_description_func, axis=1)
-df['nbhd_no_details'] = df.apply(neighborhood_details_func, axis=1)
-
-# Create a unique neighborhood feature based on the remark made previously
-df['nbhd_no'] = df['nbhd_no_description']
-df.loc[df.nbhd_no_description.isnull(), 'nbhd_no'] = df.loc[df.nbhd_no_description.isnull(), 'nbhd_no_details']
-
-# Drop some features
-df.drop(['nbhd_no_description', 'nbhd_no_details'], axis=1, inplace=True)
-
-# Now we use the dictionaries create before to create a neighborhood name, sector code and sector name from the neighborhood code:
-
-# In[35]:
-
-
-# Create a neighborhood name from the dictionary neighborhood_dict
-df['nbhd_name'] = df['nbhd_no'].map(neighborhood_dict)
-
-# Create a sector code from the dictionary neighborhood_dict
-df['sector_no'] = df['nbhd_no'].map(neighborhood_sector_dict)
-
-# Create a sector name from the dictionary neighborhood_dict
-df['sector_name'] = df['sector_no'].map(sector_dict)
-
-# Check the frequency
-# df.groupby(["sector_no", "nbhd_no"]).size()
+    # Create a neighborhood name from the dictionary neighborhood_dict
+    df['nbhd_name'] = df['nbhd_no'].map(neighborhood_dict)
+    return df
 
 
-df.head()
-
-# In[36]:
+df = neighborhood_features_func()
 
 
-# Create a postal code feature
-df['postal_code'] = df['description'].str.extract('(31[\d]{3,3})')
+# Create a function that extracts the sector name and code based on the neighborhood name
+def sector_features_func():
+    # Create a sector code from the dictionary neighborhood_dict
+    df['sector_no'] = df['nbhd_no'].map(neighborhood_sector_dict)
 
-### TRANSPORTATION
-# Create a metro feature (dummy variable)
-df['metro'] = df['description'].str.contains('metro', regex=True).astype(int)
-
-# Create a metro feature (dummy variable)
-df['tram'] = df['description'].str.contains('tram|tramway', regex=True).astype(int)
-
-# Create a metro feature (dummy variable)
-df['bus'] = df['description'].str.contains('bus|bus.|bus,', regex=True).astype(int)
-
-# Let's now reorder our columns and drop the columns that are of no use for our study.
-
-# In[37]:
+    # Create a sector name from the dictionary neighborhood_dict
+    df['sector_name'] = df['sector_no'].map(sector_dict)
+    return df
 
 
-# Drop some columns
-df.drop(['title', 'housing_type', 'city', 'details', 'rent_info', 'criteria', 'description'], axis=1, inplace=True)
+df = sector_features_func()
 
-# Reorder columns
-df = df[['link', 'agency', 'postal_code', 'sector_no', 'sector_name', 'nbhd_no', 'nbhd_name',
-         'rent', 'charges', 'provisions', 'fees', 'deposit',
-         'energy_rating', 'gas_rating',
-         'area', 'rooms', 'entrance', 'duplex',
-         'livingroom', 'livingroom_area', 'equipped_kitchen', 'openplan_kitchen',
-         'bedrooms', 'bathrooms', 'shower_rooms', 'toilets', 'separate_toilet',
-         'balcony', 'terraces', 'wooden_floor', 'fireplace', 'storage', 'heating',
-         'parking', 'cellar', 'pool',
-         'construction_year', 'bldg_flr_nb', 'apt_flr_nb',
-         'furnished', 'renovated', 'elevator', 'intercom', 'digital_code', 'orientation', 'view', 'caretaker',
-         'reduced_mobility',
-         'metro', 'tram', 'bus']]
-
-# We also check data type with .info()
-
-# In[38]:
+# Create a function that extracts the postal code
+def postal_features_func():
+    # Create a postal code feature
+    df['postal_code'] = df['description'].str.extract('(31[\d]{3,3})')
+    return df
 
 
-df.info()
-
-# We convert to numeric columns that can be converted:
-
-# In[39]:
+df = postal_features_func()
 
 
-# using apply method 
-df[['rent', 'provisions', 'fees', 'deposit',
-    'energy_rating', 'gas_rating',
-    'area', 'rooms', 'entrance', 'duplex',
-    'livingroom', 'livingroom_area', 'equipped_kitchen', 'openplan_kitchen',
-    'bedrooms', 'bathrooms', 'shower_rooms', 'toilets', 'separate_toilet',
-    'balcony', 'terraces', 'wooden_floor', 'fireplace', 'storage',
-    'parking', 'cellar', 'pool',
-    'construction_year', 'bldg_flr_nb', 'apt_flr_nb',
-    'furnished', 'renovated', 'elevator', 'intercom', 'digital_code', 'view', 'caretaker', 'reduced_mobility',
-    'metro', 'tram', 'bus']] = df[['rent', 'provisions', 'fees', 'deposit',
-                                   'energy_rating', 'gas_rating',
-                                   'area', 'rooms', 'entrance', 'duplex',
-                                   'livingroom', 'livingroom_area', 'equipped_kitchen', 'openplan_kitchen',
-                                   'bedrooms', 'bathrooms', 'shower_rooms', 'toilets', 'separate_toilet',
-                                   'balcony', 'terraces', 'wooden_floor', 'fireplace', 'storage',
-                                   'parking', 'cellar', 'pool',
-                                   'construction_year', 'bldg_flr_nb', 'apt_flr_nb',
-                                   'furnished', 'renovated', 'elevator', 'intercom', 'digital_code', 'view',
-                                   'caretaker', 'reduced_mobility',
-                                   'metro', 'tram', 'bus']].apply(pd.to_numeric)
+# Create a function that extracts hidden features related to public transportation around the apartment
+def transportation_features_func():
+    # Create a metro feature (dummy variable)
+    df['metro'] = df['description'].str.contains('metro', regex=True).astype(int)
+
+    # Create a metro feature (dummy variable)
+    df['tram'] = df['description'].str.contains('tram|tramway', regex=True).astype(int)
+
+    # Create a metro feature (dummy variable)
+    df['bus'] = df['description'].str.contains('bus|bus.|bus,', regex=True).astype(int)
+    return df
+
+
+df = transportation_features_func()
+
+
+### Columns Transformation
+
+# Create a function that reorder columns, drop useless ones and convert to numeric columns that can be converted
+def clean_columns_func(df):
+    # Drop some columns
+    df.drop(['title', 'housing_type', 'city', 'details', 'rent_info', 'criteria', 'description'], axis=1, inplace=True)
+
+    # Reorder columns
+    df = df[['link', 'agency', 'postal_code', 'sector_no', 'sector_name', 'nbhd_no', 'nbhd_name',
+             'rent', 'charges', 'provisions', 'fees', 'deposit',
+             'energy_rating', 'gas_rating',
+             'area', 'rooms', 'entrance', 'duplex',
+             'livingroom', 'livingroom_area', 'equipped_kitchen', 'openplan_kitchen',
+             'bedrooms', 'bathrooms', 'shower_rooms', 'toilets', 'separate_toilet',
+             'balcony', 'terraces', 'wooden_floor', 'fireplace', 'storage', 'heating',
+             'parking', 'cellar', 'pool',
+             'construction_year', 'bldg_flr_nb', 'apt_flr_nb',
+             'furnished', 'renovated', 'elevator', 'intercom', 'digital_code', 'orientation', 'view', 'caretaker',
+             'reduced_mobility',
+             'metro', 'tram', 'bus']]
+
+    # Convert to numeric columns that can be converted using apply method
+    df[['rent', 'provisions', 'fees', 'deposit',
+        'energy_rating', 'gas_rating',
+        'area', 'rooms', 'entrance', 'duplex',
+        'livingroom', 'livingroom_area', 'equipped_kitchen', 'openplan_kitchen',
+        'bedrooms', 'bathrooms', 'shower_rooms', 'toilets', 'separate_toilet',
+        'balcony', 'terraces', 'wooden_floor', 'fireplace', 'storage',
+        'parking', 'cellar', 'pool',
+        'construction_year', 'bldg_flr_nb', 'apt_flr_nb',
+        'furnished', 'renovated', 'elevator', 'intercom', 'digital_code', 'view', 'caretaker', 'reduced_mobility',
+        'metro', 'tram', 'bus']] = df[['rent', 'provisions', 'fees', 'deposit',
+                                       'energy_rating', 'gas_rating',
+                                       'area', 'rooms', 'entrance', 'duplex',
+                                       'livingroom', 'livingroom_area', 'equipped_kitchen', 'openplan_kitchen',
+                                       'bedrooms', 'bathrooms', 'shower_rooms', 'toilets', 'separate_toilet',
+                                       'balcony', 'terraces', 'wooden_floor', 'fireplace', 'storage',
+                                       'parking', 'cellar', 'pool',
+                                       'construction_year', 'bldg_flr_nb', 'apt_flr_nb',
+                                       'furnished', 'renovated', 'elevator', 'intercom', 'digital_code', 'view',
+                                       'caretaker', 'reduced_mobility',
+                                       'metro', 'tram', 'bus']].apply(pd.to_numeric)
+    return df
+
+
+df = clean_columns_func(df)
+
+
+### Remove Duplicates
+
+# As discussed in the previous part we found some duplicate entries based on the column 'link'
+# We need to delete duplicate entries in the dataset as they would affect our analysis
+# as our learning algorithm would learn from incorrect data.
+# Create a function that removes duplicates
+def deduplicate_func(df):
+    # Finding out duplicates
+    uniqueRows = len(set(df.link))
+    totalRows = len(df.link)
+    duplicateRows = totalRows - uniqueRows
+    print('There are {} duplicates'.format(duplicateRows))
+
+    # dropping duplicate values
+    df = df.drop_duplicates(subset='link', keep="first")
+
+    print("Data size after dropping duplicate values is: {} ".format(df.shape))
+    return df
+
+
+df = deduplicate_func(df)
+
+
+
+
+
+
+### Remove Outliers
+
+# Outliers will sit way outside of the distribution of data points
+# and skew the distribution of the data and potential calculations.
+# Therefore we need to identify and remove them
+
+# Let's explore these outliers
+fig, ax = plt.subplots()
+ax.scatter(df['area'], df['rent'],color='blue')
+plt.ylabel('rent', fontsize=13)
+plt.xlabel('area', fontsize=13)
+plt.show()
+
+
+# We identified one outlier, we will then remove it:
+
+# In[8]:
+
+
+# Cleaning the dataset from its outliers
+df = df.drop(df[(df['area']<40) & (df['rent']>1500)].index)
+
+
+# Finally, let's check the data after removing the outlier:
+
+# In[9]:
+
+
+#Check the graphic again
+fig, ax = plt.subplots()
+ax.scatter(df['area'], df['rent'],color='blue')
+plt.ylabel('rent', fontsize=13)
+plt.xlabel('area', fontsize=13)
+plt.show()
+
+
+
+
+
 
 # ## 4. Verifications
 # The DataFrame now looks a lot cleaner, but we still want to make sure it’s really usable before we start our analysis. 
