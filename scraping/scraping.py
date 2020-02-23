@@ -77,7 +77,7 @@ def get_apartment_links(pages, driver):
     return apartment_links
 
 
-# Create a flatten function:
+# Create a flatten function
 def flatten_list(apartment_links):
     apartment_links_flat = []
     for sublist in apartment_links:

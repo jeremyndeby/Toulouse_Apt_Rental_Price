@@ -17,270 +17,56 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import stats
-from scipy.stats import norm, skew #for some statistics
+from scipy.stats import norm, skew
 
 plt.style.use(style='ggplot')
-
-
 
 
 # Import the cleaned data from the cleaning part
 df = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
 
-# check the size of the data
+# Size of the data
 print("Initial data size is: {} ".format(df.shape))
 
-# first visual inspection of the df
-df.head()
-
-
-# In[4]:
-
-
-#  columns in the dataset:
+#  Columns in the dataset
 print(df.columns)
 
+# Datatypes in my Pandas DataFrame
+print(df.dtypes)
 
-# ## 3.1 Data Preparation
 
-# ### 3.1.1 Remove duplicates
-
-# As discussed in the previous part we found some duplicate entries based on the column 'link'
-# We need to delete duplicate entries in the dataset as they would affect our analysis as our learning algorithm would learn from incorrect data. 
-
-# In[5]:
-
-
-# Finding out duplicates
-uniqueRows = len(set(df.link))
-totalRows = len(df.link)
-duplicateRows = totalRows - uniqueRows
-print('There are {} duplicates'.format(duplicateRows))
-
-
-# In[6]:
-
-
-# dropping duplicate values 
-df = df.drop_duplicates(subset='link', keep="first")
-
-print("Data size after dropping duplicate values is: {} ".format(df.shape)) 
-
-
-# ### 3.1.2 Remove Outliers
-# 
-# Outliers can be a Data Scientists nightmare.
-# - By definition, an outlier is something that is outside of the expected response. How far you're willing to consider something to be an outlier, is down to the individual and the problem.
-# - From this definition, this outlier will therefore sit way outside of the distribution of data points. Hence, this will skew the distribution of the data and potential calculations.
-# 
-# Here we are trying to identify the outliers in the data which we cannot use in the model because it skews the analysis towards values that are unlikely:
-
-# In[7]:
-
-
-# Let's explore these outliers
-fig, ax = plt.subplots()
-ax.scatter(df['area'], df['rent'],color='blue')
-plt.ylabel('rent', fontsize=13)
-plt.xlabel('area', fontsize=13)
-plt.show()
-
-
-# We identified one outlier, we will then remove it:
-
-# In[8]:
-
-
-# Cleaning the dataset from its outliers
-df = df.drop(df[(df['area']<40) & (df['rent']>1500)].index)
-
-
-# Finally, let's check the data after removing the outlier:
-
-# In[9]:
-
-
-#Check the graphic again
-fig, ax = plt.subplots()
-ax.scatter(df['area'], df['rent'],color='blue')
-plt.ylabel('rent', fontsize=13)
-plt.xlabel('area', fontsize=13)
-plt.show()
-
-
-# ### 3.1.3 Finding and filling Missing Values
-# 
-# Missing values are the Data Scientists other nightmare. They can mean multiple things:
-# - A missing value may be the result of an error during the production of the dataset. Depending on where the data comes from, this could be:
-#     - a human error
-#     - a machinery error
-# - A missing value in some cases, may just mean a that a 'zero' should be present. In which case, it can be replaced by a 0. The data description provided helps to address situations like these.
-# - Otherwise, missing values represent no information. Therefore, does the fact that you don't know what value to assign an entry, mean that filling it with a 'zero' is always a good fit?
-# 
-# Some algorithms do not like missing values. Some are capable of handling them, but others are not. Therefore since we are using a variety of algorithms, it's best to treat them in an appropriate way. If you have missing values, you have two options:
-# - Delete the entire row
-# - Fill the missing entry with an imputed value
-# 
-# In order to treat this dataset we will cycle through each feature with missing values and treat them individually based on the data description, or our judgement. Let's first take identify features with missing values and their share of missing values:
-
-# In[10]:
-
-
-# Graph of the missing values
-df_na = (df.isnull().sum() / len(df)) * 100
-df_na = df_na.drop(df_na[df_na == 0].index).sort_values(ascending=False)[:30]
-f, ax = plt.subplots(figsize=(15, 12))
-plt.xticks(rotation='90')
-sns.barplot(x=df_na.index, y=df_na)
-plt.xlabel('Features', fontsize=15)
-plt.ylabel('Percent of missing values', fontsize=15)
-plt.title('Percent missing data by feature', fontsize=15)
-plt.show()
-
-# Table of the missing values
-total = df.isnull().sum().sort_values(ascending=False)
-percent = (df.isnull().sum()/df.isnull().count()).sort_values(ascending=False)
-missing_data = pd.concat([total, percent], axis=1, keys=['Total', 'Percent'])
-missing_dataSubset=missing_data[missing_data['Total']>0]
-print(missing_dataSubset)
-
-
-# Through reference of the data description, this gives guidance on how to treat missing values for some columns. For ones where guidance isn't clear enough, we have to use intuition as explained below.
-
-# We can clearly see columns 'postal_code', 'orientation', 'bldg_flr_nb' and 'construction_year' having a lot of values that are missing (Nan% greater than 50). 
-# We know that for those columns, missing values mean that we do not have the information. We decide to drop those columns as there are too many missing values:
-
-# In[11]:
-
-
-df.drop(['postal_code','orientation','bldg_flr_nb','construction_year'], axis=1, inplace=True)
-
-
-# We impute the rest of the columns by proceeding sequentially:
-
-# - nbhd_no / nbhd_name : According to data description missing values are due to a lack of information - Replacing missing data with the mode of 'neighborhood'
-# - sector_no / sector_name : According to data description missing values are due to a lack of information - Replacing missing data with the appropriate sector according to the neighborhood the appartment is in.
-
-# In[12]:
-
-
-df['nbhd_no'] = df['nbhd_no'].fillna(df['nbhd_no'].mode()[0])
-
-#Group by neighborhood and fill in missing value by the mode of neighborhood
-df['nbhd_name'] = df.groupby('nbhd_no')['nbhd_name'].transform(lambda x: x.fillna(x.mode()[0]))
-df['sector_no'] = df.groupby('nbhd_no')['sector_no'].transform(lambda x: x.fillna(x.mode()[0]))
-df['sector_name'] = df.groupby('nbhd_no')['sector_name'].transform(lambda x: x.fillna(x.mode()[0]))
-
-
-# - agency: According to data description missing values are due to the the fact that some appartment are not rented via a real estaste agency - Replacing missing data with 'None'
-
-# In[13]:
-
-
-df['agency'] = df['agency'].fillna('None')
-
-
-# - provisions : According to data description missing values are, if rented via a real estate agency, due to a lack of information and since provisions of each appartment most likely have similar provisions to other appartments in its neighborhood we can fill in missing values by the median 'provisions' of the neighborhood if 'agency' different to 'None', else replace with 0 
-# - fees : According to data description missing values are, if rented via a real estate agency, due to a lack of information and since fees of each appartment most likely have similar fees to other appartments in its neighborhood we can fill in missing values by the median 'fees' of the neighborhood if 'agency' different to 'None', else replace with 0
-
-# In[14]:
-
-
-# If no agency then 0
-for col in ('provisions', 'fees'):
-    df.loc[(df[col].isnull()) & (df.agency == 'None'), col] = 0
-
-# If agency then group by neighborhood and fill in missing value by the median value of neighborhood
-for col in ('provisions', 'fees'):
-    df[col] = df.groupby('nbhd_no')[col].transform(lambda x: x.fillna(x.median()))
-
-
-# - deposit: According to data description missing values are due to a lack of information and since the deposit of each appartment most likely have a similar deposit to other appartments in its neighborhood we can fill in missing values by the median 'deposit' of the neighborhood
-# - energy_rating: According to data description missing values are due to a lack of information and since the area of each appartment most likely have a similar energy rating to other appartments in its neighborhood we can fill in missing values by the median 'energy_rating' of the neighborhood
-# - gas_rating: According to data description missing values are due to a lack of information and since the gas rating of each appartment most likely have a similar gas rating to other appartments in its neighborhood we can fill in missing values by the median 'gas_rating' of the neighborhood
-# - apt_flr_nb : According to data description missing values are due to a lack of information and since buildings in the same neighborhood most likely have the same total number of floors we can fill in missing values by the median 'apt_flr_nb' of the neighborhood
-# - toilets: According to data description missing values are due to a lack of information and since the number of toilets of each appartment most likely have a similar number of toilets to other appartments in its neighborhood we can fill in missing values by the median 'toilets' of the neighborhood
-# - area: According to data description missing values are due to a lack of information and since the area of each appartment most likely have a similar area to other appartments in its neighborhood we can fill in missing values by the median 'area' of the neighborhood
-
-# In[15]:
-
-
-#Group by neighborhood and fill in missing value by the median value of neighborhood
-for col in ('deposit', 'energy_rating', 'gas_rating', 'apt_flr_nb', 'toilets', 'area'):
-    df[col] = df.groupby('nbhd_no')[col].transform(lambda x: x.fillna(x.median()))
-
-
-# - heating: According to data description missing values are due to a lack of information. We can fill in missing values by the mode 'heating' of the neighborhood
-
-# In[16]:
-
-
-#Group by neighborhood and fill in missing value by the mode of the neighborhood
-df['heating'] = df.groupby('nbhd_no')['heating'].transform(lambda x: x.fillna(x.mode()[0]))
-
-
-# Finally we verify that we got rid of all missing values:
-
-# In[17]:
-
-
-# Final inspection of missing values
-print('There are {} missing value(s) left'.format(sum(df.isnull().sum())))
-
-sns.heatmap(df.isnull(),yticklabels=False,cbar=False,cmap='coolwarm')
-plt.show()
-
-
-# Before going to next part, we will save a version of the cleaned dataset as it will be useful later for our map analysis but also to get a final table with predicted rent:
-
-# In[18]:
-
-
-df.to_csv('data_seloger_datapreparation_clean_part3.csv',index=False)
-
-
-# Finally we drop the  features 'link' ,'sector_name', 'nbhd_name' as it is not usefull for our model.
-
-# In[19]:
-
-
-#check the numbers of samples and features
-print("Data size before dropping link feature is: {} ".format(df.shape))
-
-# Drop features
+# Drop features that will not be used by the model
 df.drop(['link','sector_name','nbhd_name'], axis=1, inplace=True)
 
-#check again the data size after dropping the 'link' variable
-print("Data size after dropping link feature is: {} ".format(df.shape)) 
+# ## Correlation matrix
+
+# Looking for correlations between different variables in the dataset,
+# we find out the features that correlate the most to the rent of the apartment in the dataset
+# and plot the correlation matrix as a heatmap.
+# Note: when the variables are not normally distributed
+# or the relationship between the variables is not linear (as is the case here),
+# it is more appropriate to use the Spearman rank correlation method rather than the default Pearson's method.
 
 
-# ## 3.2 Exploratory Data Analysis
-
-# ### 3.2.1 Correlation matrix
-
-# Now that missing values and outliers have been treated, we will analyse each feature in more detail. 
-# This will give guidance on how to prepare this feature for modeling. We will analyse the features based on the different aspects of the apartment available in the dataset.
-
-# Looking for correlations between different variables in the dataset, we find out the features that correlate the most to the rent of the apartment in the dataset and plot the correlation matrix as a heatmap.
-# Note: when the variables are not normally distributed or the relationship between the variables is not linear (as is the case here), it is more appropriate to use the Spearman rank correlation method rather than the default Pearson's method.
-
-# In[20]:
-
-
-#Correlation map to see how features are correlated with SalePrice
+#Correlation map
 corrmat = df.corr()
 plt.subplots(figsize=(12,9))
 sns.heatmap(corrmat, vmax=0.9, square=True)
 plt.show()
 
 
-# In[21]:
-
+plt.figure(figsize = (14, 8))
+mask = np.triu(np.ones_like(df.corr(), dtype=bool))
+sns.heatmap(round(df.corr(method = 'spearman'), 3), mask=mask, annot=True, linewidths=0.5)
+plt.title('Correlation Matrix')
+plt.tight_layout()
+plt.savefig('plots/cormat.png')
+plt.show()
 
 #correlation matrix
 corrmat = df.corr(method='spearman')
 f, ax = plt.subplots(figsize=(20, 9))
-sns.heatmap(corrmat,vmax=.5, square=True, fmt='.2f', linewidths=.2, cmap="YlGnBu")
+sns.heatmap(corrmat,vmax=.5, square=True, fmt='.2f', linewidths=.2)
 #sns.heatmap(corrmat,vmin=-1, vmax=1, center=0, square=True, cmap=sns.diverging_palette(20, 220, n=200))
 plt.show()
 
