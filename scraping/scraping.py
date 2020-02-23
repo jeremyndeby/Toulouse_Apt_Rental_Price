@@ -1,29 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Motivation
 
-# Before walking you through the project, let me tell you a little bit about the motivation behind it. Aside from Data Science and Machine Learning, my other passion is spending time in the mountains. Planning a trip to any mountain requires lots of careful planning in order to minimize the risks. That means paying close attention to the weather conditions as the summit day approaches. My absolutely favorite website for this is Mountain-Forecast.com which gives you the weather forecasts for almost any mountain in the world at different elevations. The only problem is that it doesn’t offer any historical data (as far as I can tell), which can sometimes be useful when determining if it is a good idea to make the trip or wait for better conditions.
-# This problem has been in the back of my mind for a while and I finally decided to do something about it. Below, I’ll describe how I wrote a web scraper for Mountain-Forecast.com using Python and Beautiful Soup, and put it into a Raspberry Pi to collect the data on a daily basis.
 
-# # I. Scraping with Beautiful Soup and Selenium
+# ### Scraping with Beautiful Soup and Selenium ### #
 
 # In[17]:
 
 
-import os
-import random
-import time
+#import os
+#import random
+#import time
 
-import numpy as np
-import pandas as pd
-import seaborn as sns
-from bs4 import BeautifulSoup
+#import numpy as np
+#import pandas as pd
+#import seaborn as sns
+#from bs4 import BeautifulSoup
 
-sns.set()
+#sns.set()
 
-from selenium import webdriver
-import sys
+#from selenium import webdriver
+#import sys
 
 # In[19]:
 

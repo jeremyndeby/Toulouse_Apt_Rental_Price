@@ -2,7 +2,7 @@
 # coding: utf-8
 
 
-##### Data Cleaning #####
+# ### Data Cleaning ### #
 
 # Now that the scraping part is finished, raw data extracted still need
 # some cleaning and processing before being analyzed.
