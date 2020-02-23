@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # III. Explanatory Data Analysis
+# ### Explanatory Data Analysis ### #
 # 
 # First of all, to guide our feature engineering, we would like to know what factors add value to an apartment?
 # From this quick online research, there are several key things that stood out:
@@ -457,7 +457,7 @@ sns.scatterplot(df['deposit'], df['rent'],color='blue', ax=axs[1]);
 
 
 # - Here we see a positive correlation with rent as the deposit increases.
-# - This relation seems to be normal as the deposit amount is based on the rent, most of the time equal to one rent without charges. Thus we cannot use this feature to predict the rent. 
+# - This relation seems to be normal as the deposit amount is based on the rent, most of the time equal to one rent without charges. Thus we cannot use this feature to predict the rent.
 # - We will drop this feature. 
 
 # #### energy_rating: Energy performance diagnostic of the appartment. 
