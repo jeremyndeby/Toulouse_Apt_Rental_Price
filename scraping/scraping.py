@@ -286,7 +286,7 @@ print("Initial data size is: {} ".format(df_apartment.shape))
 
 
 # ## Export the file
-df_apartment.to_csv('data_seloger_raw_test.csv', index=False)
+df_apartment.to_csv('data_seloger_raw.csv', index=False)
 print("Data exported")
 
 
