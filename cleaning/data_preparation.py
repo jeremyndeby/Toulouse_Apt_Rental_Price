@@ -807,6 +807,7 @@ df = clean_columns_func(df)
 # As discussed in the previous part we found some duplicate entries based on the column 'link'
 # We need to delete duplicate entries in the dataset as they would affect our analysis
 # as our learning algorithm would learn from incorrect data.
+
 # Create a function that removes duplicates
 def deduplicate_func(df):
     # Finding out duplicates
@@ -835,35 +836,28 @@ df = deduplicate_func(df)
 # and skew the distribution of the data and potential calculations.
 # Therefore we need to identify and remove them
 
-# Let's explore these outliers
+# Create a function that plot and remove outliers
+def remove_outliers_func():
+# Explore outliers
 fig, ax = plt.subplots()
 ax.scatter(df['area'], df['rent'],color='blue')
 plt.ylabel('rent', fontsize=13)
 plt.xlabel('area', fontsize=13)
 plt.show()
-
-
-# We identified one outlier, we will then remove it:
-
-# In[8]:
-
 
 # Cleaning the dataset from its outliers
 df = df.drop(df[(df['area']<40) & (df['rent']>1500)].index)
 
-
-# Finally, let's check the data after removing the outlier:
-
-# In[9]:
-
-
-#Check the graphic again
+# Check data after removing outliers
 fig, ax = plt.subplots()
 ax.scatter(df['area'], df['rent'],color='blue')
 plt.ylabel('rent', fontsize=13)
 plt.xlabel('area', fontsize=13)
 plt.show()
+return df
 
+
+df = remove_outliers_func()
 
 
 
