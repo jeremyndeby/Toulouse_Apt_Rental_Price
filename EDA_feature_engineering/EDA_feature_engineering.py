@@ -37,7 +37,7 @@ df = pd.read_csv(
 # ## Quick analysis
 
 # Create a simple preliminary EDA function
-def quick_EDA_func():
+def quick_EDA_func(df):
     # Size of the data
     print("Initial data size is: {} ".format(df.shape))
 
@@ -110,7 +110,7 @@ def quick_EDA_func():
 # it is more appropriate to use the Spearman rank correlation method rather than the default Pearson's method.
 
 # Create a correlation matrix function
-def corrmat_func():
+def corrmat_func(df):
     # Correlation matrix
     corrmat = round(df.corr(method='spearman'), 2)
     mask = np.triu(np.ones_like(corrmat, dtype=bool))
@@ -122,11 +122,11 @@ def corrmat_func():
     plt.show()
 
     # Correlation matrix of variables that have the highest correlation with 'rent'
-    top_feature = corrmat[abs(corrmat['rent'] > 0.20)].index
+    top_feature = corrmat[abs(corrmat['rent'] > 0.15)].index
     top_corrmat = df[top_feature].corr(method='spearman')
     top_mask = np.triu(np.ones_like(top_corrmat, dtype=bool))
     f, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(top_corrmat, vmin=.2, vmax=1, mask=top_mask, annot=True, fmt='.2f', linewidths=.1, cmap="YlGnBu",
+    sns.heatmap(top_corrmat, vmin=.15, vmax=1, mask=top_mask, annot=True, fmt='.2f', linewidths=.1, cmap="YlGnBu",
                 yticklabels=top_feature.values, xticklabels=top_feature.values, square=True)
     plt.title('Correlation Matrix of features that have the highest correlation with rent')
     plt.tight_layout()
@@ -143,8 +143,8 @@ def corrmat_func():
 
     # Plot the relationship between 'rent' and the 6 variables that have the highest correlation with 'rent'
     topcorr = df.corr(method='spearman')['rent'].sort_values()[:-1]
-    topcorr = topcorr.tail(6)
-    fig, ax = plt.subplots(3, 2, figsize=(16, 12))
+    topcorr = topcorr.tail(9)
+    fig, ax = plt.subplots(3, 3, figsize=(25, 12))
     ax = ax.ravel()
     j = 0
     for i in topcorr.index:
@@ -215,7 +215,7 @@ def plot_cont_feat_func(feat):
 
 
 # Create a function that plots features depending on their type
-def plot_all_feat_func():
+def plot_all_feat_func(df):
     # 'agency': Name of the real estate agency in charge of the apartment.
     # Categorical feature
     plot_cat_dum_feat_func('agency')
@@ -494,9 +494,9 @@ def plot_all_feat_func():
 
 
 # Run the EDA functions
-quick_EDA_func()
-corrmat_func()
-plot_all_feat_func()
+quick_EDA_func(df)
+corrmat_func(df)
+# plot_all_feat_func(df)
 
 
 # ### Feature Engineering
@@ -645,6 +645,9 @@ df = feat_eng_func(df)
 # However, the algorithms based on distance calculations
 # such as k-NN or k-Means need to have scaled continuous features as model input.
 # Basically, there are two common ways of scaling: Normalization & Standardization
+
+# ## Correlation matrix before model selection
+corrmat_func(df)
 
 
 # ### Export the file
