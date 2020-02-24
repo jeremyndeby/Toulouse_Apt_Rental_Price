@@ -115,7 +115,7 @@ def corrmat_func(df):
     corrmat = round(df.corr(method='spearman'), 2)
     mask = np.triu(np.ones_like(corrmat, dtype=bool))
     f, ax = plt.subplots(figsize=(14, 8))
-    sns.heatmap(corrmat, vmax=1, mask=mask, annot=True, fmt='.2f', linewidths=.1, cmap="YlGnBu")
+    sns.heatmap(corrmat, vmax=1, mask=mask, fmt='.2f', linewidths=.1, cmap="YlGnBu")
     plt.title('Correlation Matrix')
     plt.tight_layout()
     # plt.savefig('cormat.png')
@@ -248,8 +248,7 @@ def plot_all_feat_func(df):
     # - Here we see a positive correlation with rent as the fees increase.
     # - This amount is calculated by the agency (if an agency) based on the the geographical location of the apartment
     # and its size in square meters of the apartment and not directly linked to the rent.
-    # We will keep this feature while keeping in mind its supposed correlation with area and neighborhood
-    # - We will test the feature for normality.
+    # - We will drop this feature.
 
     # 'deposit': Deposit in euros.
     # Numerical continuous feature
@@ -507,7 +506,7 @@ def drop_feat_func(df):
     print("Data size before dropping the features is: {} ".format(df.shape))
 
     # List of features to OHE
-    feat_to_drop = ['link', 'sector_name', 'nbhd_name','charges', 'deposit']
+    feat_to_drop = ['link', 'sector_name', 'nbhd_name','charges', 'deposit','fees']
     # Drop columns
     df.drop(feat_to_drop, axis=1, inplace=True)
 
@@ -587,7 +586,7 @@ def log_transform_target_feat_func(df):
 # Create a function that transform skewed features
 def transform_feat_func(df):
     # Features to check for skewness (numerical features)
-    numeric_feats = ['fees', 'energy_rating', 'gas_rating', 'area', 'rooms', 'livingroom_area', 'bedrooms',
+    numeric_feats = ['energy_rating', 'gas_rating', 'area', 'rooms', 'livingroom_area', 'bedrooms',
                      'toilets', 'balcony', 'terraces', 'parking', 'apt_flr_nb']
 
     # Check the skew of all numerical features before transformation
