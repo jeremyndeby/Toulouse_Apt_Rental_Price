@@ -6,32 +6,19 @@
 # In[104]:
 
 
-import pandas as pd
-import numpy as np
-from IPython.display import display
-import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
 plt.style.use(style='ggplot')
 plt.rcParams['figure.figsize'] = (10, 6)
-from matplotlib.colors import LogNorm
-from math import sqrt
-from scipy.stats import skew
-import os
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import explained_variance_score, mean_squared_error, r2_score
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_squared_error
 from sklearn import linear_model
-from sklearn.linear_model import Ridge, Lasso, RidgeCV, LassoCV
+from sklearn.linear_model import Lasso, RidgeCV, LassoCV
 from sklearn.ensemble import RandomForestRegressor,GradientBoostingRegressor,AdaBoostRegressor
 from xgboost.sklearn import XGBRegressor
-import xgboost as xgb
 from lightgbm import LGBMRegressor
-import datetime
-
-
 
 pd.options.display.max_columns = None
 pd.options.display.max_rows = None
@@ -130,7 +117,8 @@ plt.show()
 # In[ ]:
 
 
-perform feature selection: This maybe was the most valuable thing to do in this competition, the dataset contained more than 300 features and from a plot of correlation matrix for some features (as there were many features this was done selecting 15 features), a correlation matrix helped us to realize there were many redundant features and this is bad, if we add redundant information to our model it keeps learning the same thing again and again and that doesn’t help, whenever it’s possible we want to remove redundant features.
+perform feature selection: This maybe was the most valuable thing to do in this competition, the dataset contained more than 300 features and
+of correlation matrix for some features (as there were many features this was done selecting 15 features), a correlation matrix helped us to realize there were many redundant features and this is bad, if we add redundant information to our model it keeps learning the same thing again and again and that doesn’t help, whenever it’s possible we want to remove redundant features.
 
 One of the vital steps here is to reduce the number of features. 
 We will do this using XGBoost's inbuilt feature importance functionality.
@@ -213,9 +201,7 @@ plot_importance(xg_reg, max_num_features=10)
 
 
 import xgboost as xgb
-from sklearn.metrics import mean_squared_error
 import pandas as pd
-import numpy as np
 
 data_dmatrix = xgb.DMatrix(data=X,label=y)
 
@@ -455,8 +441,6 @@ model_score['ridge'] = rmse(y_test, y_pred_ridge_test)
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import RobustScaler
 from sklearn.model_selection import KFold
-from sklearn.model_selection import cross_val_score
-
 
 kf = KFold(n_splits=12, random_state=42, shuffle=True)
 

@@ -624,6 +624,16 @@ def transform_feat_func(df):
 # We can see that a lot of parameters remained skewed due probably to features with lots of 0 values.
 
 
+# ## (Optional) Scaling features
+# In most cases, the numerical features of the dataset do not have a certain range and they differ from each other.
+# In real life, it is nonsense to expect rental price and the size of the apartment SqM to have the same range.
+# Scaling solves this problem. The continuous features become identical in terms of the range, after a scaling process.
+# This process is not mandatory for many algorithms, but it might be still nice to apply.
+# However, the algorithms based on distance calculations
+# such as k-NN or k-Means need to have scaled continuous features as model input.
+# Basically, there are two common ways of scaling: Normalization & Standardization
+
+
 # Create a feature engineering function
 def feat_eng_func(df):
     df = drop_feat_func(df)
@@ -636,15 +646,6 @@ def feat_eng_func(df):
 
 df = feat_eng_func(df)
 
-
-# ## (Optional) Scaling features
-# In most cases, the numerical features of the dataset do not have a certain range and they differ from each other.
-# In real life, it is nonsense to expect rental price and the size of the apartment SqM to have the same range.
-# Scaling solves this problem. The continuous features become identical in terms of the range, after a scaling process.
-# This process is not mandatory for many algorithms, but it might be still nice to apply.
-# However, the algorithms based on distance calculations
-# such as k-NN or k-Means need to have scaled continuous features as model input.
-# Basically, there are two common ways of scaling: Normalization & Standardization
 
 # ## Correlation matrix before model selection
 corrmat_func(df)
