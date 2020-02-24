@@ -33,8 +33,10 @@ df = pd.read_csv(
 
 # ### Explanatory Data Analysis
 
-# Create a EDA function
-def EDA_func(df):
+# ## First analysis
+
+# Create a simple EDA function
+def EDA_func():
     # Size of the data
     print("Initial data size is: {} ".format(df.shape))
 
@@ -44,6 +46,13 @@ def EDA_func(df):
         list(df.select_dtypes(include=[np.number]).shape)[1],
         list(df.select_dtypes(include=['object']).shape)[1]))
 
+    # Describe the Target variable
+    print(
+        'Statistics of the target variable rental price:\n{} \n From the target variable we learn that the cheapest '
+        'rent is of {}€ per month, the most expensive one is of {}€ per month and the mean is of {}€ per month'.format(
+            df['rent'].describe(),
+            df['rent'].min(), df['rent'].max(), round(df['rent'].mean())))
+
     # Histogram of the number of listings per sector
     nbr = df[['rent', 'sector_name']].groupby('sector_name').count().sort_values(by='rent', ascending=False)
     nbr.reset_index(0, inplace=True)
@@ -51,9 +60,9 @@ def EDA_func(df):
 
     plt.figure(figsize=(10, 6))
     sns.barplot(x=nbr['sector_name'], y=nbr['# Apartments'], palette="Reds_r")
-    plt.xlabel('\nSectors', fontsize=15, color='#c0392b')
-    plt.ylabel("Number of listings\n", fontsize=15, color='#c0392b')
-    plt.title("Number of listings per sector in Toulouse on seLoger.com\n", fontsize=18, color='#e74c3c')
+    plt.xlabel('\nSectors')
+    plt.ylabel("Number of listings\n")
+    plt.title("Number of listings per sector in Toulouse on seLoger.com\n")
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
@@ -64,9 +73,9 @@ def EDA_func(df):
 
     plt.figure(figsize=(10, 6))
     sns.barplot(x=price['sector_name'], y=price['rent'], palette="Blues_r")
-    plt.xlabel('\nSectors', fontsize=15, color='#2980b9')
-    plt.ylabel('Median Rental Price (€)\n', fontsize=15, color='#2980b9')
-    plt.title("Median Rental Price per sector in Toulouse on seLoger.com\n", fontsize=18, color='#3742fa')
+    plt.xlabel('\nSectors')
+    plt.ylabel('Median Rental Price (€)\n')
+    plt.title("Median Rental Price per sector in Toulouse on seLoger.com\n")
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
@@ -75,7 +84,11 @@ def EDA_func(df):
     return df
 
 
-df = EDA_func(df)
+df = EDA_func()
+
+print(
+    '\n From the target variable we learn that the cheapest rent is of {}€ per month, the most expensive one is of {}€ per month and the mean is of {}€ per month'.format(
+        df['rent'].min(), df['rent'].max(), round(df['rent'].mean())))
 
 # Drop features that will not be used by the model
 df.drop(['link', 'sector_name', 'nbhd_name'], axis=1, inplace=True)
@@ -91,7 +104,7 @@ df.drop(['link', 'sector_name', 'nbhd_name'], axis=1, inplace=True)
 # it is more appropriate to use the Spearman rank correlation method rather than the default Pearson's method.
 
 # Create a correlation matrix function
-def corrmat_func(df):
+def corrmat_func():
     # Correlation matrix
     corrmat = round(df.corr(method='spearman'), 2)
     mask = np.triu(np.ones_like(corrmat, dtype=bool))
@@ -139,42 +152,41 @@ def corrmat_func(df):
     return df
 
 
-df = corrmat_func(df)
+df = corrmat_func()
 
 
-# ### Feature Engineering
+# ## Visual check of the distribution of each feature
 
-# # Visual check of the distribution of each feature
 # For a efficient model we need to review one by one each feature to determine which transformation is needed.
 # Then we will transform the numerical features first and then the categorical ones.
 
-# Create a function that returns a various plots for categorical and dummy features
+# Create a function that returns various plots for categorical and dummy features
 def plot_cat_dum_feat_func(feat):
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 12))
     sns.countplot(df[feat], ax=axs[0, 0])
-    sns.catplot(x=feat, y='rent', data=df, ax=axs[0,1])
-    sns.boxplot(df[feat], df['rent'], ax=axs[1,0])
-    sns.barplot(df[feat], df['rent'], ax=axs[1,1])
+    sns.catplot(x=feat, y='rent', data=df, ax=axs[0, 1])
+    sns.boxplot(df[feat], df['rent'], ax=axs[1, 0])
+    sns.barplot(df[feat], df['rent'], ax=axs[1, 1])
     plt.close(2)
     plt.tight_layout()
     return print(plt.show())
 
 
-# Create a function that returns a various plots for numerical discrete features
+# Create a function that returns various plots for numerical discrete features
 def plot_discrete_feat_func(feat):
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 12))
-    sns.countplot(df[feat], ax=axs[0, 0])
-    sns.catplot(x=feat, y='rent', data=df, ax=axs[0,1])
-    sns.boxplot(df[feat], df['rent'], ax=axs[1,0])
-    sns.regplot(df[feat], df['rent'], color='blue',
+    sns.countplot(df[feat], palette="Blues_r", ax=axs[0, 0])
+    sns.catplot(x=feat, y='rent', data=df, palette="Blues_r", ax=axs[0, 1])
+    sns.boxplot(df[feat], df['rent'], palette="Blues_r", ax=axs[1, 0])
+    sns.regplot(df[feat], df['rent'], color='darkblue',
                 scatter_kws={"alpha": 0.2}, order=2,
-                x_jitter=.1,ax=axs[1,1])
+                x_jitter=.1, ax=axs[1, 1])
     plt.close(2)
     plt.tight_layout()
     return print(plt.show())
 
 
-# Create a function that returns a various plots for numerical continuous features
+# Create a function that returns various plots for numerical continuous features
 def plot_cont_feat_func(feat):
     fig, axs = plt.subplots(ncols=2, figsize=(20, 6))
     sns.distplot(df[feat], fit=norm, ax=axs[0])
@@ -185,399 +197,366 @@ def plot_cont_feat_func(feat):
     return print(plt.show())
 
 
-# 'agency': Name of the real estate agency in charge of the apartment.
-# Categorical feature
-plot_cat_dum_feat_func('agency')
-# - Here the real estate agency doesn't appear to have much of an impact on the rent.
-# - We will create a dummy variable whether or not there is an agency.
-
-# 'sector_no': Sector code of the apartment.
-# Categorical feature
-plot_cat_dum_feat_func('sector_no')
-# - Sectors have a contribution towards rent,
-# since we see slightly higher values for certain areas and lower values for others.
-# - Since it is categorical feature without order we will use One-Hot-Encoding to create dummy variables.
-
-# 'nbhd_no': Neighborhood code of the apartment.
-# Categorical feature
-plot_cat_dum_feat_func('nbhd_no')
-# - Neighborhoods have a contribution towards rent, since we see slightly higher values
-# for certain areas and lower values for others.
-# - Since it is categorical feature without order we will use One-Hot-Encoding to create dummy variables.
-
-# 'charges': Type of charges of the apartment.
-# Categorical feature
-plot_cat_dum_feat_func('charges')
-# - This feature does not hold much information since the numbers of observations for the class +CH' is too low.
-# - We will simply drop the feature.
-
-# 'fees': Fees charged to the tenant in euros set by the agency.
-# Numerical continuous feature
-plot_cont_feat_func('fees')
-# - Here we see a positive correlation with rent as the fees increase.
-# - This amount is calculated by the agency (if an agency) based on the the geographical location of the apartment
-# and its size in square meters of the apartment and not directly linked to the rent.
-# We will keep this feature while keeping in mind its supposed correlation with area and neighborhood
-# - We will test the feature for normality.
-
-# 'deposit': Deposit in euros.
-# Numerical continuous feature
-plot_cont_feat_func('deposit')
-# - Here we see a positive correlation with rent as the deposit increases.
-# - This relation seems to be normal as the deposit amount is based on the rent,
-# most of the time equal to one rent without charges.
-# Thus we cannot use this feature to predict the rent.
-# - We will drop this feature. 
-
-# 'energy_rating': Energy performance diagnostic of the apartment.
-# Numerical continuous feature
-plot_cont_feat_func('energy_rating')
-# - Here we do not see a significant correlation with rent as the energy rating increases.
-# - We will test the feature for normality.
-
-# 'gas_rating': Greenhouse gas emission index of the apartment.
-# Numerical continuous feature
-plot_cont_feat_func('gas_rating')
-# - Here we do not see a significant correlation with rent as the gas rating increases.
-# - We will test the feature for normality.
-
-# 'area': Total area in square meters of the apartment.
-# Numerical continuous feature
-plot_cont_feat_func('area')
-# - Here we see a positive correlation with rent as the total area increases.
-# - We will test the feature for normality.
-
-# 'rooms': Total number of rooms in the apartment.
-# Numerical discrete feature
-plot_discrete_feat_func('rooms')
-# - We see a lot of houses with 1, 2 or 3 rooms, and a very low number of apartments with 6 or above.
-# - Here we see a positive correlation with rent as the total number of rooms increase.
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'entrance': Whether or not the apartment has an entrance room.
-# Dummy feature
-plot_cat_dum_feat_func('entrance')
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'duplex': Whether or not it is a duplex.
-# Dummy feature
-plot_cat_dum_feat_func('duplex')
-# - Here it appears that duplex apartments are able to demand a higher average rent than ones that are not duplexes.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'livingroom': Whether or not it has a living-room.
-# Dummy feature
-plot_cat_dum_feat_func('livingroom')
-# - Here it appears that apartments with a living room are able to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'livingroom_area': Total living-room area in square meters.
-# Numerical continuous feature
-plot_cont_feat_func('livingroom_area')
-# - Here we see a positive correlation with rent as the livingroom area increases.
-# - We will test the feature for normality.
-
-# 'equipped_kitchen': Whether or it has an equipped kitchen.
-# Dummy feature
-plot_cat_dum_feat_func('equipped_kitchen')
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'openplan_kitchen': Whether or not it has an open-plan kitchen.
-# Dummy feature
-plot_cat_dum_feat_func('openplan_kitchen')
-# - Here it appears that apartments with an open-plan kitchen are able
-# to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'bedrooms': Total number of bedrooms.
-# Numerical discrete feature
-plot_discrete_feat_func('bedrooms')
-# - We see a lot of apartments with 1, 2 and 3 bedrooms, and a very low number of apartments with 4 or above.
-# - Here we see a positive correlation with rent as the number of bedrooms increase.
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'bathrooms': Whether or not it has a bathroom.
-# Dummy feature
-plot_cat_dum_feat_func('bathrooms')
-# - Here it appears that apartments with at least one bathroom are able
-# to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'shower_rooms': Whether or not it has a shower-room.
-# Dummy feature
-plot_cat_dum_feat_func('shower_rooms')
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'toilets': Total number of toilets.
-# Numerical discrete feature
-plot_discrete_feat_func('toilets')
-# - We see a lot of apartments with 1  toilet and a very low number with 2 toilets or more.
-# - Here we see a strong positive correlation with rent as the number of toilets increase. 
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'separate_toilet': Whether or not it has separate toilet.
-# Dummy feature
-plot_cat_dum_feat_func('separate_toilet')
-# - Here it appears that apartments with at separate toilet are able to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'balcony': Total number of balconies.
-# Numerical discrete feature
-plot_discrete_feat_func('balcony')
-# - We see a lot of apartments with 0 or 1 balcony and a very low number with 2 or more.
-# - Here we see a positive correlation with rent as the number of balconies increase. 
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'terraces': Total number of terraces.
-# Numerical discrete feature
-plot_discrete_feat_func('terraces')
-# - We see a lot of apartments with 0 or 1 terraces and a very low number with 2 or more.
-# - Here we see a positive correlation with rent as the number of terraces increase.
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'wooden_floor': Whether or not it has some wooden floor.
-# Dummy feature
-plot_cat_dum_feat_func('wooden_floor')
-# - Here it appears that apartments with wooden floor are able to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'fireplace': Whether or not it has a fireplace.
-# Dummy feature
-plot_cat_dum_feat_func('fireplace')
-# - Here it appears that apartments with a fireplace are able to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'storage': Whether or not there is some storage within the apartment.
-# Dummy feature
-plot_cat_dum_feat_func('storage')
-# - Here it appears that apartments with some storage are able
-# to demand a slightly higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'heating': Type of heating system.
-# Categorical feature
-plot_cat_dum_feat_func('heating')
-# - Here it appears that apartments with central or gas heating system are able
-# to demand a slightly higher average rent than other ones.
-# - Since it is categorical feature without order we will use One-Hot-Encoding to create dummy variables.
-
-# 'parking': Total number of parking places.
-# Numerical discrete feature
-plot_discrete_feat_func('parking')
-# - We see a lot of apartments with 0 or 1 parking place and a very low number with 2 or more.
-# - Here we see a positive correlation with rent as the number of terraces increase.
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'cellar': Whether or not it has a cellar.
-# Dummy feature
-plot_cat_dum_feat_func('cellar')
-# - Here it appears that apartments with a cellar are able to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'pool': Whether or not the residence of the apartment has a pool.
-# Dummy feature
-plot_cat_dum_feat_func('pool')
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'apt_flr_nb': Floor number of the apartment.
-# Numerical discrete feature
-plot_discrete_feat_func('apt_flr_nb')
-# - We see a lot of apartments at the 1st, 2nd or 3rd floor and a very low number at the 4th floor or higher.
-# - Here we see a positive correlation with rent as the number of the floor increases.
-# - Since this is a continuous numeric feature, we will test the feature for normality.
-
-# 'furnished': Whether or not it is furnished.
-# Dummy feature
-plot_cat_dum_feat_func('furnished')
-# - Here it appears that furnished apartments are able to demand a higher average rent than non-furnished ones.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'renovated': Whether or not it has been renovated recently.
-# Dummy variable
-plot_cat_dum_feat_func('renovated')
-# - Here it appears that recently renovated apartments are able to demand a higher average rent than non-renovated ones.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'elevator': Whether or not there is an elevator in the building of the apartment.
-# Dummy feature
-plot_cat_dum_feat_func('elevator')
-# - Here it appears that apartments with an elevator in the building are able
-# to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'intercom': Whether or not it has an intercom.
-# Dummy variable
-plot_cat_dum_feat_func('intercom')
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# 'digital_code': Whether or not it has a digital code at the entrance of the building of the apartment.
-# Dummy feature
-plot_cat_dum_feat_func('digital_code')
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### view: Whether or not it has a nice view. 
-# Dummy feature
-
-# In[61]:
-
-
-# Graphs for categorical/dummy features 
-fig, axs = plt.subplots(ncols=4, figsize=(25, 6))
-
-sns.countplot(df['view'], ax=axs[0])
-sns.catplot(x="view", y="rent", data=df, ax=axs[1])
-sns.boxplot(df['view'], df['rent'], ax=axs[2])  # .set(ylim=(0,800000))
-sns.barplot(df['view'], df['rent'], ax=axs[3]);  # .set(ylim=(0,800000))
-
-# - Here it appears that apartments with a view are able to demand a higher average rent than ones without.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### caretaker: Whether or not it has a caretaker. 
-# Dummy feature
-
-# In[62]:
-
-
-# Graphs for categorical/dummy features 
-fig, axs = plt.subplots(ncols=4, figsize=(25, 6))
-
-sns.countplot(df['caretaker'], ax=axs[0])
-sns.catplot(x="caretaker", y="rent", data=df, ax=axs[1])
-sns.boxplot(df['caretaker'], df['rent'], ax=axs[2])  # .set(ylim=(0,800000))
-sns.barplot(df['caretaker'], df['rent'], ax=axs[3]);  # .set(ylim=(0,800000))
-
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### reduced_mobility: Whether or not it is accessible to reduced mobility persons. 
-# Dummy feature
-
-# In[63]:
-
-
-# Graphs for categorical/dummy features 
-fig, axs = plt.subplots(ncols=4, figsize=(25, 6))
-
-sns.countplot(df['reduced_mobility'], ax=axs[0])
-sns.catplot(x="reduced_mobility", y="rent", data=df, ax=axs[1])
-sns.boxplot(df['reduced_mobility'], df['rent'], ax=axs[2])  # .set(ylim=(0,800000))
-sns.barplot(df['reduced_mobility'], df['rent'], ax=axs[3]);  # .set(ylim=(0,800000))
-
-# - Here it appears that apartments accessible to reduced mobility persons able to demand a higher average rent than ones that are not accessible to them.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### metro: Whether or not it is close to a metro station
-# Dummy feature
-
-# In[64]:
-
-
-# Graphs for categorical/dummy features 
-fig, axs = plt.subplots(ncols=4, figsize=(25, 6))
-
-sns.countplot(df['metro'], ax=axs[0])
-sns.catplot(x="metro", y="rent", data=df, ax=axs[1])
-sns.boxplot(df['metro'], df['rent'], ax=axs[2])  # .set(ylim=(0,800000))
-sns.barplot(df['metro'], df['rent'], ax=axs[3]);  # .set(ylim=(0,800000))
-
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### tram: Whether or not it is close to a tram station
-# Dummy feature
-
-# In[65]:
-
-
-# Graphs for categorical/dummy features 
-fig, axs = plt.subplots(ncols=4, figsize=(25, 6))
-
-sns.countplot(df['tram'], ax=axs[0])
-sns.catplot(x="tram", y="rent", data=df, ax=axs[1])
-sns.boxplot(df['tram'], df['rent'], ax=axs[2])  # .set(ylim=(0,800000))
-sns.barplot(df['tram'], df['rent'], ax=axs[3]);  # .set(ylim=(0,800000))
-
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### bus: Whether or not it is close to a bus station
-# Dummy feature
-
-# In[66]:
-
-
-# Graphs for categorical/dummy features 
-fig, axs = plt.subplots(ncols=4, figsize=(25, 6))
-
-sns.countplot(df['bus'], ax=axs[0])
-sns.catplot(x="bus", y="rent", data=df, ax=axs[1])
-sns.boxplot(df['bus'], df['rent'], ax=axs[2])  # .set(ylim=(0,800000))
-sns.barplot(df['bus'], df['rent'], ax=axs[3]);  # .set(ylim=(0,800000))
-
-# - We do not see a clear significant correlation with the rent.
-# - Since this is a dummy variable, we will leave it how it is.
-
-# #### 3.2.1.2 Drop some features 
-# As discussed above we will drop the features 'charges' and 'deposit' using .drop():
-
-# In[67]:
-
-
-print("Data size before dropping the features is: {} ".format(df.shape))
-
-# Features to drop: charges deposit
-df.drop(['charges', 'deposit'], axis=1, inplace=True)
-
-print("Data size after dropping the features is: {} ".format(df.shape))
-
-# #### 3.2.1.3 One-Hot-Encoding of multiple categorical variables
-# As discussed above we will create dummy variables via One-Hot-Encoding the features 'sector' and 'neighborhood', 'heating'
-
-# In[68]:
-
-
-# List of features to OHE
-feat_to_ohe = ['sector_no', 'nbhd_no', 'heating']
-
-# One hot encode
-df = pd.get_dummies(df, columns=feat_to_ohe)
-
-# #### 3.2.1.4 Create dummy variables
-# As discussed above we will create a flag from the feature 'agency'
-
-# In[69]:
-
-
-# Transform to dummy variable: agency 
-df['agency_flag'] = [0 if x == 'None' else 1 for x in df['agency']]
-
-# Features to drop: agency
-df.drop(['agency'], axis=1, inplace=True)
-
-# ### 3.2.2 Distribution of the Target Variable
-# 
-# In regression we are predicting a continuous number. Therefore, it is always useful to check the distribution of the target variable when building a regression model as Machine Learning algorithms work well with features that are normally distributed, a distribution that is symmetric and has a characteristic bell shape. 
-# If features are not normally distributed, you can transform them using clever statistical methods.
-# 
+# Create a function that plots features depending on their type
+def plot_all_feat_func():
+    # 'agency': Name of the real estate agency in charge of the apartment.
+    # Categorical feature
+    plot_cat_dum_feat_func('agency')
+    # - Here the real estate agency doesn't appear to have much of an impact on the rent.
+    # - We will create a dummy variable whether or not there is an agency.
+
+    # 'sector_no': Sector code of the apartment.
+    # Categorical feature
+    plot_cat_dum_feat_func('sector_no')
+    # - Sectors have a contribution towards rent,
+    # since we see slightly higher values for certain areas and lower values for others.
+    # - Since it is categorical feature without order we will use One-Hot-Encoding to create dummy variables.
+
+    # 'nbhd_no': Neighborhood code of the apartment.
+    # Categorical feature
+    plot_cat_dum_feat_func('nbhd_no')
+    # - Neighborhoods have a contribution towards rent, since we see slightly higher values
+    # for certain areas and lower values for others.
+    # - Since it is categorical feature without order we will use One-Hot-Encoding to create dummy variables.
+
+    # 'charges': Type of charges of the apartment.
+    # Categorical feature
+    plot_cat_dum_feat_func('charges')
+    # - This feature does not hold much information since the numbers of observations for the class +CH' is too low.
+    # - We will simply drop the feature.
+
+    # 'fees': Fees charged to the tenant in euros set by the agency.
+    # Numerical continuous feature
+    plot_cont_feat_func('fees')
+    # - Here we see a positive correlation with rent as the fees increase.
+    # - This amount is calculated by the agency (if an agency) based on the the geographical location of the apartment
+    # and its size in square meters of the apartment and not directly linked to the rent.
+    # We will keep this feature while keeping in mind its supposed correlation with area and neighborhood
+    # - We will test the feature for normality.
+
+    # 'deposit': Deposit in euros.
+    # Numerical continuous feature
+    plot_cont_feat_func('deposit')
+    # - Here we see a positive correlation with rent as the deposit increases.
+    # - This relation seems to be normal as the deposit amount is based on the rent,
+    # most of the time equal to one rent without charges.
+    # Thus we cannot use this feature to predict the rent.
+    # - We will drop this feature.
+
+    # 'energy_rating': Energy performance diagnostic of the apartment.
+    # Numerical continuous feature
+    plot_cont_feat_func('energy_rating')
+    # - Here we do not see a significant correlation with rent as the energy rating increases.
+    # - We will test the feature for normality.
+
+    # 'gas_rating': Greenhouse gas emission index of the apartment.
+    # Numerical continuous feature
+    plot_cont_feat_func('gas_rating')
+    # - Here we do not see a significant correlation with rent as the gas rating increases.
+    # - We will test the feature for normality.
+
+    # 'area': Total area in square meters of the apartment.
+    # Numerical continuous feature
+    plot_cont_feat_func('area')
+    # - Here we see a positive correlation with rent as the total area increases.
+    # - We will test the feature for normality.
+
+    # 'rooms': Total number of rooms in the apartment.
+    # Numerical discrete feature
+    plot_discrete_feat_func('rooms')
+    # - We see a lot of houses with 1, 2 or 3 rooms, and a very low number of apartments with 6 or above.
+    # - Here we see a positive correlation with rent as the total number of rooms increase.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'entrance': Whether or not the apartment has an entrance room.
+    # Dummy feature
+    plot_cat_dum_feat_func('entrance')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'duplex': Whether or not it is a duplex.
+    # Dummy feature
+    plot_cat_dum_feat_func('duplex')
+    # - Here it appears that duplex apartments are able to demand a higher average rent than ones that are not duplexes.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'livingroom': Whether or not it has a living-room.
+    # Dummy feature
+    plot_cat_dum_feat_func('livingroom')
+    # - Here it appears that apartments with a living room are able to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'livingroom_area': Total living-room area in square meters.
+    # Numerical continuous feature
+    plot_cont_feat_func('livingroom_area')
+    # - Here we see a positive correlation with rent as the livingroom area increases.
+    # - We will test the feature for normality.
+
+    # 'equipped_kitchen': Whether or it has an equipped kitchen.
+    # Dummy feature
+    plot_cat_dum_feat_func('equipped_kitchen')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'openplan_kitchen': Whether or not it has an open-plan kitchen.
+    # Dummy feature
+    plot_cat_dum_feat_func('openplan_kitchen')
+    # - Here it appears that apartments with an open-plan kitchen are able
+    # to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'bedrooms': Total number of bedrooms.
+    # Numerical discrete feature
+    plot_discrete_feat_func('bedrooms')
+    # - We see a lot of apartments with 1, 2 and 3 bedrooms, and a very low number of apartments with 4 or above.
+    # - Here we see a positive correlation with rent as the number of bedrooms increase.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'bathrooms': Whether or not it has a bathroom.
+    # Dummy feature
+    plot_cat_dum_feat_func('bathrooms')
+    # - Here it appears that apartments with at least one bathroom are able
+    # to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'shower_rooms': Whether or not it has a shower-room.
+    # Dummy feature
+    plot_cat_dum_feat_func('shower_rooms')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'toilets': Total number of toilets.
+    # Numerical discrete feature
+    plot_discrete_feat_func('toilets')
+    # - We see a lot of apartments with 1  toilet and a very low number with 2 toilets or more.
+    # - Here we see a strong positive correlation with rent as the number of toilets increase.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'separate_toilet': Whether or not it has separate toilet.
+    # Dummy feature
+    plot_cat_dum_feat_func('separate_toilet')
+    # - Here it appears that apartments with at separate toilet are able
+    # to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'balcony': Total number of balconies.
+    # Numerical discrete feature
+    plot_discrete_feat_func('balcony')
+    # - We see a lot of apartments with 0 or 1 balcony and a very low number with 2 or more.
+    # - Here we see a positive correlation with rent as the number of balconies increase.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'terraces': Total number of terraces.
+    # Numerical discrete feature
+    plot_discrete_feat_func('terraces')
+    # - We see a lot of apartments with 0 or 1 terraces and a very low number with 2 or more.
+    # - Here we see a positive correlation with rent as the number of terraces increase.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'wooden_floor': Whether or not it has some wooden floor.
+    # Dummy feature
+    plot_cat_dum_feat_func('wooden_floor')
+    # - Here it appears that apartments with wooden floor are able to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'fireplace': Whether or not it has a fireplace.
+    # Dummy feature
+    plot_cat_dum_feat_func('fireplace')
+    # - Here it appears that apartments with a fireplace are able to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'storage': Whether or not there is some storage within the apartment.
+    # Dummy feature
+    plot_cat_dum_feat_func('storage')
+    # - Here it appears that apartments with some storage are able
+    # to demand a slightly higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'heating': Type of heating system.
+    # Categorical feature
+    plot_cat_dum_feat_func('heating')
+    # - Here it appears that apartments with central or gas heating system are able
+    # to demand a slightly higher average rent than other ones.
+    # - Since it is categorical feature without order we will use One-Hot-Encoding to create dummy variables.
+
+    # 'parking': Total number of parking places.
+    # Numerical discrete feature
+    plot_discrete_feat_func('parking')
+    # - We see a lot of apartments with 0 or 1 parking place and a very low number with 2 or more.
+    # - Here we see a positive correlation with rent as the number of terraces increase.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'cellar': Whether or not it has a cellar.
+    # Dummy feature
+    plot_cat_dum_feat_func('cellar')
+    # - Here it appears that apartments with a cellar are able to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'pool': Whether or not the residence of the apartment has a pool.
+    # Dummy feature
+    plot_cat_dum_feat_func('pool')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'apt_flr_nb': Floor number of the apartment.
+    # Numerical discrete feature
+    plot_discrete_feat_func('apt_flr_nb')
+    # - We see a lot of apartments at the 1st, 2nd or 3rd floor and a very low number at the 4th floor or higher.
+    # - Here we see a positive correlation with rent as the number of the floor increases.
+    # - Since this is a continuous numeric feature, we will test the feature for normality.
+
+    # 'furnished': Whether or not it is furnished.
+    # Dummy feature
+    plot_cat_dum_feat_func('furnished')
+    # - Here it appears that furnished apartments are able to demand a higher average rent than non-furnished ones.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'renovated': Whether or not it has been renovated recently.
+    # Dummy variable
+    plot_cat_dum_feat_func('renovated')
+    # - Here it appears that recently renovated apartments are able
+    # to demand a higher average rent than non-renovated ones.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'elevator': Whether or not there is an elevator in the building of the apartment.
+    # Dummy feature
+    plot_cat_dum_feat_func('elevator')
+    # - Here it appears that apartments with an elevator in the building are able
+    # to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'intercom': Whether or not it has an intercom.
+    # Dummy variable
+    plot_cat_dum_feat_func('intercom')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'digital_code': Whether or not it has a digital code at the entrance of the building of the apartment.
+    # Dummy feature
+    plot_cat_dum_feat_func('digital_code')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'view': Whether or not it has a nice view.
+    # Dummy feature
+    plot_cat_dum_feat_func('view')
+    # - Here it appears that apartments with a view are able to demand a higher average rent than ones without.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'caretaker': Whether or not it has a caretaker.
+    # Dummy feature
+    plot_cat_dum_feat_func('caretaker')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'reduced_mobility': Whether or not it is accessible to reduced mobility persons.
+    # Dummy feature
+    plot_cat_dum_feat_func('reduced_mobility')
+    # - Here it appears that apartments accessible to reduced mobility persons able
+    # to demand a higher average rent than ones that are not accessible to them.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'metro': Whether or not it is close to a metro station
+    # Dummy feature
+    plot_cat_dum_feat_func('metro')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'tram': Whether or not it is close to a tram station
+    # Dummy feature
+    plot_cat_dum_feat_func('tram')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+
+    # 'bus': Whether or not it is close to a bus station
+    # Dummy feature
+    plot_cat_dum_feat_func('bus')
+    # - We do not see a clear significant correlation with the rent.
+    # - Since this is a dummy variable, we will leave it how it is.
+    return
+
+
+plot_all_feat_func()
+
+
+# ### Feature Engineering
+
+# ## Drop several features (discussed in the EDA part)
+# Create a function that drops the selected features
+def drop_feat_func():
+    print("Data size before dropping the features is: {} ".format(df.shape))
+
+    # List of features to OHE
+    feat_to_drop = ['charges', 'deposit']
+
+    # Drop columns
+    df.drop(feat_to_drop, axis=1, inplace=True)
+
+    print('Features {} have been One-Hot-Encoded'.format(feat_to_drop))
+    print("Data size after dropping the features is: {} ".format(df.shape))
+    return df
+
+
+df = drop_feat_func()
+
+
+# ## One-Hot-Encoding of multiple categorical variables (discussed in the EDA part)
+# Create a One-Hot-Encoding function
+def ohe_func(df):
+    # List of features to OHE
+    feat_to_ohe = ['sector_no', 'nbhd_no', 'heating']
+
+    # One hot encode
+    df = pd.get_dummies(df, columns=feat_to_ohe)
+
+    print('Features {} have been One-Hot-Encoded'.format(feat_to_ohe))
+    return df
+
+
+df = ohe_func(df)
+
+
+# ## Transform some features to dummies (discussed in the EDA part)
+# Create a function that transform some features to dummy a dummy
+def to_dummy_func(df):
+    # Transform to dummy
+    df['agency_flag'] = [0 if x == 'None' else 1 for x in df['agency']]
+
+    # Drop feature
+    df.drop(['agency'], axis=1, inplace=True)
+
+    print('Feature agency have been transformed to dummy variable')
+    return df
+
+
+df = to_dummy_func(df)
+
+
+# ## log1p transformation of the Target Variable (if needed)
+# In regression we are predicting a continuous number.
+# Therefore, it is always useful to check the distribution of the target variable when building a regression model as Machine Learning algorithms work well with features that are normally distributed, a distribution that is symmetric and has a characteristic bell shape.
+#
 # So First, let's check the target variable rent.
 
 # In[70]:
 
 
-# Describe the Target variable
-print(df['rent'].describe())
-
-print(
-    '\n From the target variable we learn that the cheapest rent is of {}€ per month, the most expensive one is of {}€ per month and the mean is of {}€ per month'.format(
-        df['rent'].min(), df['rent'].max(), round(df['rent'].mean())))
-
 # In[71]:
+
+
+def plot_discrete_feat_func(feat):
+    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 12))
+    sns.countplot(df[feat], palette="Blues_r", ax=axs[0, 0])
+    sns.catplot(x=feat, y='rent', data=df, palette="Blues_r", ax=axs[0, 1])
+    sns.boxplot(df[feat], df['rent'], palette="Blues_r", ax=axs[1, 0])
+    sns.regplot(df[feat], df['rent'], color='darkblue',
+                scatter_kws={"alpha": 0.2}, order=2,
+                x_jitter=.1, ax=axs[1, 1])
+    plt.close(2)
+    plt.tight_layout()
+    return print(plt.show())
+
+plot_discrete_feat_func('area')
 
 
 # Plot histogram and probability
@@ -593,6 +572,7 @@ plt.title('Rent distribution')
 plt.subplot(1, 2, 2)
 res = stats.probplot(df['rent'], plot=plt)
 plt.suptitle('Before transformation')
+plt.show()
 
 # skewness and kurtosis
 print("Skewness before transformation: %f" % df['rent'].skew())
