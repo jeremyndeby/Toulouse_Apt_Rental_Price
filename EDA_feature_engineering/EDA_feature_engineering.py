@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import stats
+from scipy.special import boxcox1p
 from scipy.stats import norm, skew
 
 plt.style.use(style='ggplot')
@@ -33,14 +34,14 @@ df = pd.read_csv(
 
 # ### Explanatory Data Analysis
 
-# ## First analysis
+# ## Quick analysis
 
-# Create a simple EDA function
-def EDA_func():
+# Create a simple preliminary EDA function
+def quick_EDA_func():
     # Size of the data
     print("Initial data size is: {} ".format(df.shape))
 
-    # Datatypes in my Pandas DataFrame
+    # Data types in the dataFrame
     print(df.dtypes)
     print("There are {} Numerical variables and {} Categorical variables".format(
         list(df.select_dtypes(include=[np.number]).shape)[1],
@@ -53,11 +54,30 @@ def EDA_func():
             df['rent'].describe(),
             df['rent'].min(), df['rent'].max(), round(df['rent'].mean())))
 
+    # Plot histogram and probability of the rent, target variable
+    fig = plt.figure(figsize=(15, 5))
+
+    plt.subplot(1, 2, 1)
+    sns.distplot(df['rent'], fit=norm);
+    (mu, sigma) = norm.fit(df['rent'])
+    print('\n mu = {:.2f} and sigma = {:.2f}\n'.format(mu, sigma))
+    plt.legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f})'.format(mu, sigma)],
+               loc='best')
+    plt.ylabel('Frequency')
+    plt.title('Rent distribution\n')
+
+    plt.subplot(1, 2, 2)
+    res = stats.probplot(df['rent'], plot=plt)
+    plt.suptitle('Target variable: rent')
+    plt.show()
+
+    print(
+        'The Interactive Geographical Map provides additional information on the characteristics of each neighborhood')
+
     # Histogram of the number of listings per sector
     nbr = df[['rent', 'sector_name']].groupby('sector_name').count().sort_values(by='rent', ascending=False)
     nbr.reset_index(0, inplace=True)
     nbr.rename(columns={'rent': '# Apartments'}, inplace=True)
-
     plt.figure(figsize=(10, 6))
     sns.barplot(x=nbr['sector_name'], y=nbr['# Apartments'], palette="Reds_r")
     plt.xlabel('\nSectors')
@@ -70,7 +90,6 @@ def EDA_func():
     # Histogram of the median rental price per sector
     price = df[['rent', 'sector_name']].groupby('sector_name').median().round().sort_values(by='rent', ascending=False)
     price.reset_index(0, inplace=True)
-
     plt.figure(figsize=(10, 6))
     sns.barplot(x=price['sector_name'], y=price['rent'], palette="Blues_r")
     plt.xlabel('\nSectors')
@@ -78,20 +97,7 @@ def EDA_func():
     plt.title("Median Rental Price per sector in Toulouse on seLoger.com\n")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
-    print(
-        'The Interactive Geographical Map provides additional information on the characteristics of each neighborhood')
-    return df
-
-
-df = EDA_func()
-
-print(
-    '\n From the target variable we learn that the cheapest rent is of {}€ per month, the most expensive one is of {}€ per month and the mean is of {}€ per month'.format(
-        df['rent'].min(), df['rent'].max(), round(df['rent'].mean())))
-
-# Drop features that will not be used by the model
-df.drop(['link', 'sector_name', 'nbhd_name'], axis=1, inplace=True)
+    return print(plt.show())
 
 
 # ## Correlation with the target variable
@@ -148,11 +154,7 @@ def corrmat_func():
         j += 1
     plt.tight_layout()
     # plt.savefig('Scatterplots.png')
-    plt.show()
-    return df
-
-
-df = corrmat_func()
+    return print(plt.show())
 
 
 # ## Visual check of the distribution of each feature
@@ -188,12 +190,27 @@ def plot_discrete_feat_func(feat):
 
 # Create a function that returns various plots for numerical continuous features
 def plot_cont_feat_func(feat):
-    fig, axs = plt.subplots(ncols=2, figsize=(20, 6))
-    sns.distplot(df[feat], fit=norm, ax=axs[0])
-    sns.regplot(df[feat], df['rent'], color='blue', ax=axs[1],
+    fig = plt.subplots(ncols=1, figsize=(25, 6))
+
+    # Distribution plot
+    plt.subplot(1, 3, 1)
+    sns.distplot(df[feat], fit=norm)
+    (mu, sigma) = norm.fit(df['rent'])
+    plt.legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f})'.format(mu, sigma)], loc='best')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of {}'.format(feat))
+
+    # Scatter plot
+    plt.subplot(1, 3, 2)
+    sns.regplot(df[feat], df['rent'], color='blue',
                 scatter_kws={"alpha": 0.2}, order=2)
-    plt.close(2)
-    plt.tight_layout()
+    corrcoef = df[feat].corr(df['rent'], method='spearman')
+    plt.legend(['Spearman correlation: {:.3f}'.format(corrcoef)], loc='best')
+    plt.title('Scatter Plot')
+
+    # Probability plot
+    plt.subplot(1, 3, 3)
+    stats.probplot(df[feat], plot=plt)
     return print(plt.show())
 
 
@@ -476,6 +493,9 @@ def plot_all_feat_func():
     return
 
 
+# Run the EDA functions
+quick_EDA_func()
+corrmat_func()
 plot_all_feat_func()
 
 
@@ -483,12 +503,11 @@ plot_all_feat_func()
 
 # ## Drop several features (discussed in the EDA part)
 # Create a function that drops the selected features
-def drop_feat_func():
+def drop_feat_func(df):
     print("Data size before dropping the features is: {} ".format(df.shape))
 
     # List of features to OHE
-    feat_to_drop = ['charges', 'deposit']
-
+    feat_to_drop = ['link', 'sector_name', 'nbhd_name','charges', 'deposit']
     # Drop columns
     df.drop(feat_to_drop, axis=1, inplace=True)
 
@@ -497,23 +516,16 @@ def drop_feat_func():
     return df
 
 
-df = drop_feat_func()
-
-
 # ## One-Hot-Encoding of multiple categorical variables (discussed in the EDA part)
 # Create a One-Hot-Encoding function
 def ohe_func(df):
     # List of features to OHE
     feat_to_ohe = ['sector_no', 'nbhd_no', 'heating']
-
     # One hot encode
     df = pd.get_dummies(df, columns=feat_to_ohe)
 
-    print('Features {} have been One-Hot-Encoded'.format(feat_to_ohe))
+    print('Features {} One-Hot-Encoded'.format(feat_to_ohe))
     return df
-
-
-df = ohe_func(df)
 
 
 # ## Transform some features to dummies (discussed in the EDA part)
@@ -521,170 +533,120 @@ df = ohe_func(df)
 def to_dummy_func(df):
     # Transform to dummy
     df['agency_flag'] = [0 if x == 'None' else 1 for x in df['agency']]
-
     # Drop feature
     df.drop(['agency'], axis=1, inplace=True)
 
-    print('Feature agency have been transformed to dummy variable')
+    print('Feature agency transformed to dummy variable')
     return df
 
 
-df = to_dummy_func(df)
+# ## Log transformation of the Target Variable (discussed in the EDA part)
+# Skewed numeric variables are not desirable when using Machine Learning algorithms.
+# The reason why we want to do this is move the models focus away from any extreme values,
+# to create a generalised solution. We can tame these extreme values by transforming skewed features
+
+# Create a function that log transform the target variable
+def log_transform_target_feat_func(df):
+    # Skewness and Kurtosis before transformation
+    print("Skewness before transformation: %f" % df['rent'].skew())
+    print("Kurtosis before transformation: %f" % df['rent'].kurt())
+    # The distribution of the target variable is positively skewed,
+    # meaning that the mode is always less than the mean and median.
+
+    # log1p transformation
+    df['rent'] = np.log1p(df.rent)
+    print('Target variable log transformed')
+
+    # Plot histogram and probability after log1p transformation
+    fig = plt.figure(figsize=(15, 5))
+    plt.subplot(1, 2, 1)
+    sns.distplot(df['rent'], fit=norm);
+    (mu, sigma) = norm.fit(df['rent'])
+    print('\n mu = {:.2f} and sigma = {:.2f}\n'.format(mu, sigma))
+    plt.legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu, sigma)],
+               loc='best')
+    plt.ylabel('Frequency')
+    plt.title('Rent distribution')
+    plt.subplot(1, 2, 2)
+    res = stats.probplot(df['rent'], plot=plt)
+    plt.suptitle('Target variable after transformation')
+    plt.show()
+
+    # Skewness and kurtosis after transformation
+    print("Skewness after transformation: %f" % df['rent'].skew())
+    print("Kurtosis after transformation: %f" % df['rent'].kurt())
+    return df
+# We can see from the skewness and the plot that it follows much more closely to the normal distribution now.
+# This will help the algorithms work most reliably because we are now predicting a distribution that is well-known,
+# i.e. the normal distribution.
 
 
-# ## log1p transformation of the Target Variable (if needed)
-# In regression we are predicting a continuous number.
-# Therefore, it is always useful to check the distribution of the target variable when building a regression model as Machine Learning algorithms work well with features that are normally distributed, a distribution that is symmetric and has a characteristic bell shape.
-#
-# So First, let's check the target variable rent.
-
-# In[70]:
+# ## Transform Skewed Features (skewness > 0.5)
 
 
-# In[71]:
+# Create a function that transform skewed features
+def transform_feat_func(df):
+    # Features to check for skewness (numerical features)
+    numeric_feats = ['fees', 'energy_rating', 'gas_rating', 'area', 'rooms', 'livingroom_area', 'bedrooms',
+                     'toilets', 'balcony', 'terraces', 'parking', 'apt_flr_nb']
 
+    # Check the skew of all numerical features before transformation
+    skewness_feats = df[numeric_feats].apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
+    skewness = pd.DataFrame({'Skew': skewness_feats})
+    print("Skew in numerical features:{}\n".format(skewness))
 
-def plot_discrete_feat_func(feat):
-    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 12))
-    sns.countplot(df[feat], palette="Blues_r", ax=axs[0, 0])
-    sns.catplot(x=feat, y='rent', data=df, palette="Blues_r", ax=axs[0, 1])
-    sns.boxplot(df[feat], df['rent'], palette="Blues_r", ax=axs[1, 0])
-    sns.regplot(df[feat], df['rent'], color='darkblue',
-                scatter_kws={"alpha": 0.2}, order=2,
-                x_jitter=.1, ax=axs[1, 1])
-    plt.close(2)
-    plt.tight_layout()
-    return print(plt.show())
+    # Select skewed features (skewness > 0.50)
+    skewed = skewness[abs(skewness) > 0.50]
+    skewed = skewed.dropna()
+    print("There are {} skewed numerical features to Box Cox transform out of the {} initial numerical features.".format(
+        skewed.shape[0], skewness.shape[0]))
 
-plot_discrete_feat_func('area')
+    # Box Cox Transformation of skewed features
+    skewed_features = skewed.index
+    lam = 0.15  # set λ to 0.15
+    for feat in skewed_features:
+        # df[feat] += 1
+        df[feat] = boxcox1p(df[feat], lam)
 
+    # Check the skew of all numerical features after transformation
+    skewness_feats_after = df[numeric_feats].apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
+    print("Skew in numerical features:")
+    skewness_after = pd.DataFrame({'Skew': skewness_feats_after})
+    print("Skew in numerical features after Box Cox transformation:{}\n".format(skewness_after))
 
-# Plot histogram and probability
-fig = plt.figure(figsize=(15, 5))
-plt.subplot(1, 2, 1)
-sns.distplot(df['rent'], fit=norm);
-(mu, sigma) = norm.fit(df['rent'])
-print('\n mu = {:.2f} and sigma = {:.2f}\n'.format(mu, sigma))
-plt.legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu, sigma)],
-           loc='best')
-plt.ylabel('Frequency')
-plt.title('Rent distribution')
-plt.subplot(1, 2, 2)
-res = stats.probplot(df['rent'], plot=plt)
-plt.suptitle('Before transformation')
-plt.show()
-
-# skewness and kurtosis
-print("Skewness before transformation: %f" % df['rent'].skew())
-print("Kurtosis before transformation: %f" % df['rent'].kurt())
-
-# The distribution of the target variable is positively skewed, meaning that the mode is always less than the mean and median.
-# 
-# In order to transform this variable into a distribution that looks closer to the black line shown above, we can use the numpy function log1p which applies log(1+x) to all elements within the feature.
-
-# In[72]:
-
-
-# Apply log1p transformation
-df['rent'] = np.log1p(df.rent)
-
-# In[73]:
-
-
-# Plot histogram and probability after transformation
-fig = plt.figure(figsize=(15, 5))
-plt.subplot(1, 2, 1)
-sns.distplot(df['rent'], fit=norm);
-(mu, sigma) = norm.fit(df['rent'])
-print('\n mu = {:.2f} and sigma = {:.2f}\n'.format(mu, sigma))
-plt.legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu, sigma)],
-           loc='best')
-plt.ylabel('Frequency')
-plt.title('Rent distribution')
-plt.subplot(1, 2, 2)
-res = stats.probplot(df['rent'], plot=plt)
-plt.suptitle('After transformation')
-
-# skewness and kurtosis
-print("Skewness after transformation: %f" % df['rent'].skew())
-print("Kurtosis after transformation: %f" % df['rent'].kurt())
-
-# We can see from the skewness and the plot that it follows much more closely to the normal distribution now. This will help the algorithms work most reliably because we are now predicting a distribution that is well-known, i.e. the normal distribution.
-
-# ### 3.2.3 Treating Skewed Features
-# As said earlier, skewed numeric variables are not desirable when using Machine Learning algorithms. The reason why we want to do this is move the models focus away from any extreme values, to create a generalised solution. We can tame these extreme values by transforming skewed features.
-
-# In[74]:
-
-
-# Check for skewness the following features: 'provisions', 'fees', 'energy_rating', 'gas_rating', 'area', 'rooms', 'livingroom_area', 'bedrooms', 'toilets', 'balcony', 'terraces', 'parking', 'apt_flr_nb'
-numeric_feats = ['provisions', 'fees', 'energy_rating', 'gas_rating', 'area', 'rooms', 'livingroom_area', 'bedrooms',
-                 'toilets', 'balcony', 'terraces', 'parking', 'apt_flr_nb']
-
-# Check the skew of all numerical features
-skewness_feats = df[numeric_feats].apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
-print("Skew in numerical features:")
-skewness = pd.DataFrame({'Skew': skewness_feats})
-skewness
-
-# Clearly, we have a few positive skewing features.
-# We will now transform the features with skew > 0.5 to follow more closely the normal distribution.
-# 
-# We are using the Box-Cox transformation to transform non-normal variables into a normal shape. Normality is an important assumption for many statistical techniques; if your data isn't normal, applying a Box-Cox means that you are able to run a broader number of tests.
-# We use the scipy function boxcox1p which computes the Box-Cox transformation of 1+x.
-# Note that setting λ=0 is equivalent to log1p used above for the target variable.
-
-# In[75]:
-
-
-# Select the skewed features (skewness > 0.50)
-skewed = skewness[abs(skewness) > 0.50]
-skewed = skewed.dropna()
-print("There are {} skewed numerical features to Box Cox transform out of the {} initial numerical features.".format(
-    skewed.shape[0], skewness.shape[0]))
-
-# Box Cox Transformation
-from scipy.special import boxcox1p
-
-skewed_features = skewed.index
-lam = 0.15  # set λ to 0.15
-for feat in skewed_features:
-    # df[feat] += 1
-    df[feat] = boxcox1p(df[feat], lam)
-
-# df[skewed_features] = np.log1p(df[skewed_features])
-
-
-# Observe now the correction.
-
-# In[76]:
-
-
-# Check the skew of all numerical features after Box Cox transform
-skewness_feats_after = df[numeric_feats].apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
-print("Skew in numerical features:")
-skewness_after = pd.DataFrame({'Skew': skewness_feats_after})
-print(skewness_after.head(20))
-
-# Select the skewed features (skewness > 0.50)
-skewed_after = skewness_after[abs(skewness_after) > 0.50]
-skewed_after = skewed_after.dropna()
-print(
-    "There are {} remaining skewed numerical features after Box Cox transform out of the {} skewed numerical features before transformation.".format(
-        skewed_after.shape[0], skewed.shape[0]))
-
+    # Select the skewed features (skewness > 0.50)
+    skewed_after = skewness_after[abs(skewness_after) > 0.50]
+    skewed_after = skewed_after.dropna()
+    print(
+        "There are {} remaining skewed numerical features after Box Cox transform out of the {} skewed numerical features before transformation.".format(
+            skewed_after.shape[0], skewed.shape[0]))
+    return df
 # We can see that a lot of parameters remained skewed due probably to features with lots of 0 values.
 
-# Now that our dataset is ready for modeling, we will export our dataset so we can prepare it from training, testing and prediction in our next part. 
 
-# In[77]:
+# Create a feature engineering function
+def feat_eng_func(df):
+    df = drop_feat_func(df)
+    df = ohe_func(df)
+    df = to_dummy_func(df)
+    df = log_transform_target_feat_func(df)
+    df = transform_feat_func(df)
+    return df
 
 
-df.to_csv('data_seloger_EDA_part3.csv', index=False)
-
-# In[78]:
+df = feat_eng_func(df)
 
 
-df.columns
+# ## (Optional) Scaling features
+# In most cases, the numerical features of the dataset do not have a certain range and they differ from each other.
+# In real life, it is nonsense to expect rental price and the size of the apartment SqM to have the same range.
+# Scaling solves this problem. The continuous features become identical in terms of the range, after a scaling process.
+# This process is not mandatory for many algorithms, but it might be still nice to apply.
+# However, the algorithms based on distance calculations
+# such as k-NN or k-Means need to have scaled continuous features as model input.
+# Basically, there are two common ways of scaling: Normalization & Standardization
 
-# Ref: - https://www.kaggle.com/agodwinp/stacking-house-prices-walkthrough-to-top-5/notebook
+
+# ### Export the file
+df.to_csv('data_for_modeling.csv', index=False)
+print("Data exported")
