@@ -1,3 +1,7 @@
+lightgbm
+xgboost
+scikit-learn
+scipy
 beautifulsoup4
 selenium
 unidecode

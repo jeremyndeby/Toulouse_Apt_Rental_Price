@@ -19,9 +19,6 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-# pip freeze > requirements.txt
-
-
 # Instantiate a WebDriver object
 # We need to specify the chromedriver location specific to our computer.
 chromedriver = "C:/Users/jerem/Anaconda3/envs/environment-deep-learning-cookbook/Lib/site-packages/notebook/tests/selenium/chromedriver_win32/chromedriver"
