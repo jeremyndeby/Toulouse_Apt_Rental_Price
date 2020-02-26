@@ -12,7 +12,7 @@ In summary, the aims of this project are:
 3. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
 
 ## Predicting Rental Price
-After the data has been scraped, it is a natural progression to explore and model the relationships between the property features and the rental prices. Four different types of algorithms were used to train the models which consist of three machine learning (ML) and one deep learning (DL) algorithm. This project focuses on comparing the performance and results of these four algorithms instead of explaining the theory behind the algorithms as it assumes that readers already familiar with these algorithms. For readers who are in a hurry, feel free to dive straight into section 5. Discussion and Conclusion.
+After the data has been scraped, it is a natural progression to explore and model the relationships between the property features and the rental prices. Seven different types of algorithms were used to train the models. We will focus on comparing the performance and results of the following seven algorithms:
 
 1. Linear Regression
 2. Lasso
@@ -21,6 +21,11 @@ After the data has been scraped, it is a natural progression to explore and mode
 5. Gradient Boosting Regressor
 6. Extreme Gradient Boosting Regressor
 7. Light Gradient Boosting Regressor
+
+### Metric
+Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
+- R-squared: meassures the % of variance in the target variable explained by the data
+- RMSE: measures the distance between the predicted values and actual values
 
 ## Interactive Map
 The interactive chart below provides details on Toulouse apartments for rent currently available. 
@@ -46,8 +51,6 @@ There are three notebooks within this repository representing different stages o
 - model.py - Build and compare several models and find the best hyper-parameters for the final model
 - geomap.py - The mapping code for the interactive geographical map of Toulouse real sstate
 
-## Metric
-Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
 
 
 ## Heroku Files
