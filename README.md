@@ -11,6 +11,16 @@ In summary, the aims of this project are:
 2. To build a model to estimate what should be the correct rental price given different features and their property.
 3. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
 
+## Predicting Rental Price
+After the data has been scraped, it is a natural progression to explore and model the relationships between the property features and the rental prices. Four different types of algorithms were used to train the models which consist of three machine learning (ML) and one deep learning (DL) algorithm. This project focuses on comparing the performance and results of these four algorithms instead of explaining the theory behind the algorithms as it assumes that readers already familiar with these algorithms. For readers who are in a hurry, feel free to dive straight into section 5. Discussion and Conclusion.
+
+1. Linear Regression
+2. Lasso
+3. Ridge
+4. Random Forest Regressor
+5. Gradient Boosting Regressor
+6. Extreme Gradient Boosting Regressor
+7. Light Gradient Boosting Regressor
 
 ## Interactive Map
 The interactive chart below provides details on Toulouse apartments for rent currently available. 
@@ -56,3 +66,5 @@ pip install requirements.txt
 
 ## Author
 Jeremy Ndeby - Creator - [@jeremyndeby](https://github.com/jeremyndeby)
+
+If you have any feedback or questions for this project, feel free to contact me via my [LinkedIn](https://www.linkedin.com/in/jeremyndeby/)
