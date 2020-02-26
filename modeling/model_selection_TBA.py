@@ -11,8 +11,9 @@ from lightgbm import LGBMRegressor
 from sklearn import linear_model
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
 from sklearn.linear_model import RidgeCV, LassoCV
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
+
 
 # Import the data after feature engineering
 df = pd.read_csv(
@@ -29,7 +30,7 @@ df.drop(['rent'], axis=1, inplace=True)
 X = df
 
 # Split data (random_state = 42)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.30, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.25, random_state=42)
 
 print("X_train : " + str(X_train.shape))
 print("X_test : " + str(X_test.shape))
@@ -62,8 +63,10 @@ y_pred_lr_test = model_lr.predict(X_test)
 # Results
 print("LinearRegression Training set RMSE: : {:.4f}".format(rmse(y_train, y_pred_lr_train)))
 print("LinearRegression Test set RMSE: : {:.4f}".format(rmse(y_test, y_pred_lr_test)))
-print("LinearRegression Training set R^2: : {:.3f}".format(r2_score(y_train, y_pred_lr_train)))
-print("LinearRegression Training set R^2: : {:.3f}".format(r2_score(y_test, y_pred_lr_test)))
+#print("LinearRegression Training set MAE: : {:.4f}".format(mean_absolute_error(y_train, y_pred_lr_train)))
+#print("LinearRegression Test set MAE: : {:.4f}".format(mean_absolute_error(y_test, y_pred_lr_test)))
+#print("LinearRegression Training set R^2: : {:.3f}".format(r2_score(y_train, y_pred_lr_train)))
+#print("LinearRegression Training set R^2: : {:.3f}".format(r2_score(y_test, y_pred_lr_test)))
 # Add to the final comparison dictionary
 model_score['linreg'] = rmse(y_test, y_pred_lr_test)
 
@@ -113,8 +116,7 @@ model_score['ridge'] = rmse(y_test, y_pred_ridge_test)
 
 # ## Random Forest Regressor (default parameters)
 # Create instance
-rf = RandomForestRegressor(n_estimators=100, n_jobs=-1, oob_score=True,
-                           bootstrap=True, random_state=42)
+rf = RandomForestRegressor(random_state=0)
 # Fit the model on the training set
 model_rf = rf.fit(X_train, y_train)
 # Predict
@@ -130,7 +132,7 @@ model_score['rf'] = rmse(y_test, y_pred_rf_test)
 
 # ## Gradient Boosting Regressor (default parameters)
 # Create instance
-gbr = GradientBoostingRegressor()
+gbr = GradientBoostingRegressor(random_state=0)
 # Fit the model on the training set
 model_gbr = gbr.fit(X_train, y_train)
 # Predict
@@ -146,7 +148,7 @@ model_score['gbr'] = rmse(y_test, y_pred_gbr_test)
 
 # ## Light Gradient Boosting Regressor (default parameters)
 # Create instance
-lightgbm = LGBMRegressor()
+lightgbm = LGBMRegressor(random_state=0)
 # Fit the model on the training set
 model_lgbm = lightgbm.fit(X_train, y_train)
 # Predict
@@ -162,7 +164,7 @@ model_score['lgbm'] = rmse(y_test, y_pred_lgbm_test)
 
 # ## Extreme Gradient Boosting Regressor (default parameters)
 # Create instance
-xgb = xgboost.XGBRegressor(objective='reg:squarederror')
+xgb = xgboost.XGBRegressor(objective='reg:squarederror',random_state=0)
 # Fit the model on the training set
 model_xgb = xgb.fit(X_train, y_train)
 # Predict
@@ -178,7 +180,7 @@ model_score['xgb'] = rmse(y_test, y_pred_xgb_test)
 
 # ## AdaBoost Regressor (default parameters)
 # Create instance
-adab = AdaBoostRegressor()
+adab = AdaBoostRegressor(random_state=0)
 # Fit the model on the training set
 model_adab = adab.fit(X_train, y_train)
 # Predict
