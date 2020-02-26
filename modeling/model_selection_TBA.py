@@ -67,6 +67,7 @@ print("LinearRegression Training set R^2: : {:.3f}".format(r2_score(y_test, y_pr
 # Add to the final comparison dictionary
 model_score['linreg'] = rmse(y_test, y_pred_lr_test)
 
+
 # ## Lasso
 # Compute the cross-validation score with the default hyper-parameters
 # Create instance
@@ -110,7 +111,7 @@ print("Ridge Test set RMSE: : {:.4f}".format(rmse(y_test, y_pred_ridge_test)))
 model_score['ridge'] = rmse(y_test, y_pred_ridge_test)
 
 
-# ## Random Forest
+# ## Random Forest Regressor (default parameters)
 # Create instance
 rf = RandomForestRegressor(n_estimators=100, n_jobs=-1, oob_score=True,
                            bootstrap=True, random_state=42)
@@ -127,7 +128,7 @@ print("Random Forest Test set RMSE: : {:.4f}".format(rmse(y_test, y_pred_rf_test
 model_score['rf'] = rmse(y_test, y_pred_rf_test)
 
 
-# ## Gradient Boosting Regressor
+# ## Gradient Boosting Regressor (default parameters)
 # Create instance
 gbr = GradientBoostingRegressor()
 # Fit the model on the training set
@@ -143,7 +144,7 @@ print("Gradient Boosting Test set RMSE: : {:.4f}".format(rmse(y_test, y_pred_gbr
 model_score['gbr'] = rmse(y_test, y_pred_gbr_test)
 
 
-# ## Light Gradient Boosting Regressor
+# ## Light Gradient Boosting Regressor (default parameters)
 # Create instance
 lightgbm = LGBMRegressor()
 # Fit the model on the training set
@@ -159,7 +160,7 @@ print("Light Gradient Boosting Test set RMSE: : {:.4f}".format(rmse(y_test, y_pr
 model_score['lgbm'] = rmse(y_test, y_pred_lgbm_test)
 
 
-# ## Extreme Gradient Boosting Regressor
+# ## Extreme Gradient Boosting Regressor (default parameters)
 # Create instance
 xgb = xgboost.XGBRegressor(objective='reg:squarederror')
 # Fit the model on the training set
@@ -175,7 +176,7 @@ print("Extreme Gradient Boosting Test set RMSE: : {:.4f}".format(rmse(y_test, y_
 model_score['xgb'] = rmse(y_test, y_pred_xgb_test)
 
 
-# ## AdaBoost
+# ## AdaBoost Regressor (default parameters)
 # Create instance
 adab = AdaBoostRegressor()
 # Fit the model on the training set
@@ -191,7 +192,9 @@ print("AdaBoost Test set RMSE: : {:.4f}".format(rmse(y_test, y_pred_adb_test)))
 model_score['adb'] = rmse(y_test, y_pred_adb_test)
 
 
+# ## Final comparison dictionary
 model_score
+
 # There is some overfitting in the model as it performs worse on the test set.
 # But let’s say it is good enough and move forward to feature importance (measured on the training set performance).
 # Some of the approaches can also be used for validation/OOB sets, to gain further interpretability on the unseen data.
