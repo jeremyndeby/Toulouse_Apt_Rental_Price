@@ -11,6 +11,21 @@ In summary, the aims of this project are:
 2. To build a model to estimate what should be the correct rental price given different features and their property.
 3. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
 
+## Predicting Rental Price
+After the data has been scraped, it is a natural progression to explore and model the relationships between the property features and the rental prices. Seven different types of algorithms were used to train the models. We will focus on comparing the performance and results of the following seven algorithms:
+
+1. Linear Regression
+2. Lasso
+3. Ridge
+4. Random Forest Regressor
+5. Gradient Boosting Regressor
+6. Extreme Gradient Boosting Regressor
+7. Light Gradient Boosting Regressor
+
+### Metric
+Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
+- R-squared: meassures the % of variance in the target variable explained by the data
+- RMSE: measures the distance between the predicted values and actual values
 
 ## Interactive Map
 The interactive chart below provides details on Toulouse apartments for rent currently available. 
@@ -36,8 +51,6 @@ There are three notebooks within this repository representing different stages o
 - model.py - Build and compare several models and find the best hyper-parameters for the final model
 - geomap.py - The mapping code for the interactive geographical map of Toulouse real sstate
 
-## Metric
-Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
 
 
 ## Heroku Files
@@ -56,3 +69,5 @@ pip install requirements.txt
 
 ## Author
 Jeremy Ndeby - Creator - [@jeremyndeby](https://github.com/jeremyndeby)
+
+If you have any feedback or questions for this project, feel free to contact me via my [LinkedIn](https://www.linkedin.com/in/jeremyndeby/)
