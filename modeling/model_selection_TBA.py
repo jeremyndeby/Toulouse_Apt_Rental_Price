@@ -209,9 +209,13 @@ print("\tGradient Boosting Training set MAE: : {:.4f}".format(gbr_mae_train))
 print("\tGradient Boosting Test set MAE: : {:.4f}\n".format(gbr_mae_test))
 
 
-'''Extreme Gradient Boosting Regressor (default parameters)'''
+'''Extreme Gradient Boosting Regressor (tuned )'''
 # Create instance
-xgbreg = xgb.XGBRegressor(objective='reg:squarederror', random_state=42, n_estimators=100)
+xgbreg = xgb.XGBRegressor(objective='reg:squarederror', random_state=42,
+                          max_depth=7, min_child_weight=1,
+                           reg_lambda=1, reg_alpha=0,
+                           subsample=.85, colsample_bytree=.9,
+                          eta=.01)
 # Fit the model on the training set
 model_xgb = xgbreg.fit(X_train, y_train)
 # Predict

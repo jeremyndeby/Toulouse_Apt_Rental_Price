@@ -109,26 +109,40 @@ def quick_EDA_func(df):
 # or the relationship between the variables is not linear (as is the case here),
 # it is more appropriate to use the Spearman rank correlation method rather than the default Pearson's method.
 
-# Create a correlation matrix function
-def corrmat_func(df):
-    # Correlation matrix
-    corrmat = round(df.corr(method='spearman'), 2)
-    mask = np.triu(np.ones_like(corrmat, dtype=bool))
-    f, ax = plt.subplots(figsize=(14, 8))
-    sns.heatmap(corrmat, vmax=1, mask=mask, fmt='.2f', linewidths=.1, cmap="YlGnBu")
+# Create a function that return correlation matrix heatmaps
+def heatmaps_func(df, method):
+    # Set the style of the visualization
+    sns.set(style="white")
+
+    # Create a covariance matrix
+    corrmat = df.corr(method=method)
+    # Generate a mask the size of our covariance matrix
+    mask = np.zeros_like(corrmat, dtype=np.bool)
+    mask[np.triu_indices_from(mask)] = True
+    # Set up the matplotlib figure
+    f, ax = plt.subplots(figsize=(20, 16))
+    # Generate a custom diverging colormap
+    cmap = sns.diverging_palette(220, 10, as_cmap=True)
+    # Draw the heatmap with the mask and correct aspect ratio
+    sns.heatmap(corrmat, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, cbar_kws={"shrink": .5},
+                vmax=corrmat[corrmat != 1.0].max().max())
     plt.title('Correlation Matrix')
     plt.tight_layout()
     # plt.savefig('cormat.png')
     plt.show()
 
     # Correlation matrix of variables that have the highest correlation with 'rent'
-    top_feature = corrmat[abs(corrmat['rent'] > 0.15)].index
-    top_corrmat = df[top_feature].corr(method='spearman')
-    top_mask = np.triu(np.ones_like(top_corrmat, dtype=bool))
+    top_feature = corrmat[abs(corrmat['rent']) > 0.15].index
+    top_corrmat = df[top_feature].corr(method=method)
+    # Generate a mask the size of our covariance matrix
+    top_mask = np.zeros_like(top_corrmat, dtype=np.bool)
+    top_mask[np.triu_indices_from(top_mask)] = True
+    # Set up the matplotlib figure
     f, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(top_corrmat, vmin=.15, vmax=1, mask=top_mask, annot=True, fmt='.2f', linewidths=.1, cmap="YlGnBu",
-                yticklabels=top_feature.values, xticklabels=top_feature.values, square=True)
-    plt.title('Correlation Matrix of features that have the highest correlation with rent')
+    sns.heatmap(top_corrmat, mask=top_mask, cmap=cmap, center=0, annot=True, fmt='.2f',
+                square=True, linewidths=.5, cbar_kws={"shrink": .5},
+                vmax=corrmat[corrmat != 1.0].max().max())
+    plt.title('Correlation Matrix of top features')
     plt.tight_layout()
     # plt.savefig('cormat_top_feat.png')
     plt.show()
@@ -137,10 +151,12 @@ def corrmat_func(df):
     corrmat = df.corr(method='spearman')
     corrmat.sort_values(['rent'], ascending=False, inplace=True)
     corrmat.rent
-    # Many of our predictors are correlated:
-    # this can be a problem for some predictive modeling algorithms, particularly linear regression
-    # 'area', 'rooms' and 'bedrooms' have a quite strong correlation with 'rent', the variable we are trying to predict.
+    return print(corrmat.rent)
 
+
+# Create a function that plot the relationship between 'rent'
+# and the 9 variables that have the highest correlation with 'rent'
+def regplot_top_feat_func(df):
     # Plot the relationship between 'rent' and the 6 variables that have the highest correlation with 'rent'
     topcorr = df.corr(method='spearman')['rent'].sort_values()[:-1]
     topcorr = topcorr.tail(9)
@@ -494,8 +510,10 @@ def plot_all_feat_func(df):
 
 # Run the EDA functions
 quick_EDA_func(df)
-corrmat_func(df)
+heatmaps_func(df, 'spearman')
+regplot_top_feat_func(df)
 # plot_all_feat_func(df)
+
 
 
 # ### Feature Engineering
@@ -510,7 +528,7 @@ def drop_feat_func(df):
     # Drop columns
     df.drop(feat_to_drop, axis=1, inplace=True)
 
-    print('Features {} have been One-Hot-Encoded'.format(feat_to_drop))
+    print('Features {} have been dropped'.format(feat_to_drop))
     print("Data size after dropping the features is: {} ".format(df.shape))
     return df
 
@@ -623,6 +641,30 @@ def transform_feat_func(df):
 # We can see that a lot of parameters remained skewed due probably to features with lots of 0 values.
 
 
+# ## Assess for multi-collinearity of features
+# Reduce multi-collinearity as some of our top predictors are highly correlated:
+# 'area', 'rooms' and 'bedrooms'
+
+
+def drop_feat_reduce_multicollinearity_func(df, method):
+    # Check heatmaps before dropping the columns
+    heatmaps_func(df, method)
+
+    print("Data size before dropping the features is: {} ".format(df.shape))
+
+    # List of features to OHE
+    feat_to_drop = ['rooms', 'bedrooms']
+    # Drop columns
+    df.drop(feat_to_drop, axis=1, inplace=True)
+
+    print('Features {} have been One-Hot-Encoded'.format(feat_to_drop))
+    print("Data size after dropping the features is: {} ".format(df.shape))
+
+    # Check heatmaps before dropping the columns
+    heatmaps_func(df, method)
+    return df
+
+
 # ## (Optional) Scaling features
 # In most cases, the numerical features of the dataset do not have a certain range and they differ from each other.
 # In real life, it is nonsense to expect rental price and the size of the apartment SqM to have the same range.
@@ -640,16 +682,14 @@ def feat_eng_func(df):
     df = to_dummy_func(df)
     df = log_transform_target_feat_func(df)
     df = transform_feat_func(df)
+    df = drop_feat_reduce_multicollinearity_func(df, 'spearman')
     return df
 
 
 df = feat_eng_func(df)
 
 
-# ## Correlation matrix before model selection
-corrmat_func(df)
-
-
 # ### Export the file
 df.to_csv('data_for_modeling.csv', index=False)
 print("Data exported")
+
