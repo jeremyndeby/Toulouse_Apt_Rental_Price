@@ -4,6 +4,7 @@
 # ### Model Selection ### #
 
 # Import libraries
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ import seaborn as sns
 import xgboost as xgb
 from lightgbm import LGBMRegressor
 from sklearn import linear_model
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import RidgeCV, LassoCV
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
@@ -44,10 +45,6 @@ def rmse(y, y_pred):
     return np.sqrt(mean_squared_error(y, y_pred))
 
 
-# ### Create a comparison dictionary
-model_score = {}
-
-
 # ### Compare models
 
 '''Baseline'''
@@ -57,13 +54,9 @@ model_mean = np.mean(y_train)
 y_pred_mean_train = np.ones(y_train.shape) * model_mean
 y_pred_mean_test = np.ones(y_test.shape) * model_mean
 
-
 mean_train = np.mean(y_train)
 # Get predictions on the test set
 baseline_predictions = np.ones(y_test.shape) * mean_train
-# Compute MAE
-mae_baseline = mean_absolute_error(y_test, baseline_predictions)
-
 # Results
 mean_rmse_train = rmse(y_train, y_pred_mean_train)
 mean_rmse_test = rmse(y_test, y_pred_mean_test)
@@ -209,12 +202,12 @@ print("\tGradient Boosting Training set MAE: : {:.4f}".format(gbr_mae_train))
 print("\tGradient Boosting Test set MAE: : {:.4f}\n".format(gbr_mae_test))
 
 
-'''Extreme Gradient Boosting Regressor (tuned )'''
+'''Extreme Gradient Boosting Regressor (tuned using GridSearchCV)'''
 # Create instance
 xgbreg = xgb.XGBRegressor(objective='reg:squarederror', random_state=42,
-                          max_depth=7, min_child_weight=1,
-                           reg_lambda=1, reg_alpha=0,
-                           subsample=.85, colsample_bytree=.9,
+                          max_depth=8, min_child_weight=2,
+                          subsample=.95, colsample_bytree=.85,
+                          reg_lambda=1, reg_alpha=0.1,
                           eta=.01)
 # Fit the model on the training set
 model_xgb = xgbreg.fit(X_train, y_train)
@@ -235,6 +228,19 @@ xgb_mae_train = mean_absolute_error(y_train, y_pred_xgb_train)
 xgb_mae_test = mean_absolute_error(y_test, y_pred_xgb_test)
 print("\tExtreme Gradient Boosting Training set MAE: : {:.4f}".format(xgb_mae_train))
 print("\tExtreme Gradient Boosting Test set MAE: : {:.4f}\n".format(xgb_mae_test))
+
+# Feature importances
+ft_weights_xgb_reg = pd.DataFrame(xgbreg.feature_importances_, columns=['weight'], index=X_train.columns)
+ft_weights_xgb_reg.sort_values('weight', ascending=False, inplace=True)
+ft_weights_xgb_reg.head(70)
+
+# Plotting feature importances
+plt.figure(figsize=(10,25))
+plt.barh(ft_weights_xgb_reg.index, ft_weights_xgb_reg.weight, align='center')
+plt.title("Feature importances in the XGBoost model", fontsize=14)
+plt.xlabel("Feature importance")
+plt.margins(y=0.01)
+plt.show()
 
 
 '''Light Gradient Boosting Regressor (default parameters)'''
@@ -262,34 +268,6 @@ print("\tLight Gradient Boosting Test set MAE: : {:.4f}\n".format(lgbm_mae_test)
 
 
 
-'''Adaptive Boosting Regressor (default parameters)'''
-# Create instance
-adab = AdaBoostRegressor(random_state=42)
-# Fit the model on the training set
-model_adab = adab.fit(X_train, y_train)
-# Predict
-y_pred_adb_train = model_adab.predict(X_train)
-# Test
-y_pred_adb_test = model_adab.predict(X_test)
-adb_r2_train = r2_score(y_train, y_pred_adb_train)
-adb_r2_test = r2_score(y_test, y_pred_adb_test)
-print("Adaptive Boosting Regressor:\n \tAdaptive Boosting Training set R^2: : {:.4f}".format(adb_r2_train))
-print("\tAdaptive Boosting Test set R^2: : {:.4f}".format(adb_r2_test))
-adb_rmse_train = rmse(y_train, y_pred_adb_train)
-adb_rmse_test = rmse(y_test, y_pred_adb_test)
-print("\tAdaptive Boosting Training set RMSE: : {:.4f}".format(adb_rmse_train))
-print("\tAdaptive Boosting Test set RMSE: : {:.4f}".format(adb_rmse_test))
-adb_mae_train = mean_absolute_error(y_train, y_pred_adb_train)
-adb_mae_test = mean_absolute_error(y_test, y_pred_adb_test)
-print("\tAdaptive Boosting Training set MAE: : {:.4f}".format(adb_mae_train))
-print("\tAdaptive Boosting Test set MAE: : {:.4f}\n".format(adb_mae_test))
-
-
-# There is some overfitting in the model as it performs worse on the test set.
-# But let’s say it is good enough and move forward to feature importance (measured on the training set performance).
-# Some of the approaches can also be used for validation/OOB sets, to gain further interpretability on the unseen data.
-
-
 # ## Model Evaluation
 # In this section, we will put together the results from all four models
 # and compare them side by side in order to evaluate their performance.
@@ -297,16 +275,15 @@ print("\tAdaptive Boosting Test set MAE: : {:.4f}\n".format(adb_mae_test))
 
 # combine all models' results into one dataframe
 data_models = {'Model': ['Linear Regression', 'Lasso', 'Ridge', 'Random Forest', 'Gradient Boosting',
-                         'Light Gradient Boosting', 'Extreme Gradient Boosting', 'Adaptive Boosting'],
+                         'Extreme Gradient Boosting','Light Gradient Boosting'],
                'R-squared': [lr_r2_test, lasso_r2_test, ridge_r2_test, rf_r2_test,
-                             gbr_r2_test, lgbm_r2_test, xgb_r2_test, adb_r2_test],
+                             gbr_r2_test, xgb_r2_test, lgbm_r2_test],
                'RMSE': [lr_rmse_test, lasso_rmse_test, ridge_rmse_test, rf_rmse_test,
-                        gbr_rmse_test, lgbm_rmse_test, xgb_rmse_test, adb_rmse_test],
+                        gbr_rmse_test, xgb_rmse_test, lgbm_rmse_test],
                'MAE': [lr_mae_test, lasso_mae_test, ridge_mae_test, rf_mae_test,
-                       gbr_mae_test, lgbm_mae_test, xgb_mae_test, adb_mae_test]}
+                       gbr_mae_test, xgb_mae_test, lgbm_mae_test]}
 
 results = pd.DataFrame(data=data_models)
-results
 
 
 # visualize the results using bar charts
