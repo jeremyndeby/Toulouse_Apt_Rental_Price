@@ -97,7 +97,7 @@ def quick_EDA_func(df):
     plt.title("Median Rental Price per sector in Toulouse on seLoger.com\n")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    return print(plt.show())
+    plt.show()
 
 
 # ## Correlation with the target variable
@@ -150,8 +150,7 @@ def heatmaps_func(df, method):
     print('Find the most important features relative to target')
     corrmat = df.corr(method='spearman')
     corrmat.sort_values(['rent'], ascending=False, inplace=True)
-    corrmat.rent
-    return print(corrmat.rent)
+    print(corrmat.rent)
 
 
 # Create a function that plot the relationship between 'rent'
@@ -170,7 +169,7 @@ def regplot_top_feat_func(df):
         j += 1
     plt.tight_layout()
     # plt.savefig('Scatterplots.png')
-    return print(plt.show())
+    plt.show()
 
 
 # ## Visual check of the distribution of each feature
@@ -187,7 +186,7 @@ def plot_cat_dum_feat_func(feat):
     sns.barplot(df[feat], df['rent'], ax=axs[1, 1])
     plt.close(2)
     plt.tight_layout()
-    return print(plt.show())
+    plt.show()
 
 
 # Create a function that returns various plots for numerical discrete features
@@ -201,7 +200,7 @@ def plot_discrete_feat_func(feat):
                 x_jitter=.1, ax=axs[1, 1])
     plt.close(2)
     plt.tight_layout()
-    return print(plt.show())
+    plt.show()
 
 
 # Create a function that returns various plots for numerical continuous features
@@ -227,7 +226,7 @@ def plot_cont_feat_func(feat):
     # Probability plot
     plt.subplot(1, 3, 3)
     stats.probplot(df[feat], plot=plt)
-    return print(plt.show())
+    plt.show()
 
 
 # Create a function that plots features depending on their type
@@ -505,7 +504,6 @@ def plot_all_feat_func(df):
     plot_cat_dum_feat_func('bus')
     # - We do not see a clear significant correlation with the rent.
     # - Since this is a dummy variable, we will leave it how it is.
-    return
 
 
 # Run the EDA functions
@@ -692,4 +690,3 @@ df = feat_eng_func(df)
 # ### Export the file
 df.to_csv('data_for_modeling.csv', index=False)
 print("Data exported")
-
