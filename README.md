@@ -42,7 +42,7 @@ The chart breaks down the apartments for rent by:
 
 [Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
 
-[Capture of Geographical Map](geomap/capture_geomap.PNG)
+![Capture of Geographical Map](geomap/capture_geomap.PNG)
 
 
 ## Data: A data directory
