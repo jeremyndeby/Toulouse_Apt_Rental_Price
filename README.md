@@ -30,12 +30,19 @@ Submissions will be evaluated based on RMSE (root mean squared error). Lower the
 - RMSE: measures the distance between the predicted values and actual values
 
 ## Interactive Map
-The interactive chart below provides details on Toulouse apartments for rent currently available. 
-The chart breaks down the apartments for rent by Median Rental Price, Average Rental Price, Median Area in Square Meters, Average Area in Square Meters, Median Rental Price per Square Meter, Average Rental Price per Square Meter, Number of Apartments for Rent
+The interactive geographical map below provides details on Toulouse apartments for rent currently available. 
+The chart breaks down the apartments for rent by:
+- Median Rental Price
+- Average Rental Price
+- Median Area in Square Meters
+- Average Area in Square Meters
+- Median Rental Price per Square Meter
+- Average Rental Price per Square Meter
+- Number of Apartments for Rent
 
 [Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
 
-![Capture Geographical Map](geomap/capture_geomap.PNG)
+[Capture of Geographical Map](geomap/capture_geomap.PNG)
 
 
 ## Data: A data directory
