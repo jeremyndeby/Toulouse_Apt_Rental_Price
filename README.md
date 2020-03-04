@@ -37,7 +37,7 @@ To determine the best model, we need to specify what "best" means. In this case,
 
 ![Model Comparison](modeling/model_comparison.png)
 
-Based on the seven models trained, the Extreme Gradient Boosting Regressor has the highest R-squared value of 0.7744 i.e. 77.44% of the variability in rental prices can be explained using the features. Extreme Gradient Boosting Regressor also has the lowest RMSE and MAE values.
+Based on the seven models trained, the Extreme Gradient Boosting Regressor has the highest R-squared value of 0.7744 i.e. 77.44% of the variability in rental prices can be explainedby the features collected and transformed. Extreme Gradient Boosting Regressor also has the lowest RMSE and MAE values.
 
 The top five most important features are (from most important to least important based on the ranking of feature importances):
 - The size of the appartment in squared meters ('area')
@@ -48,6 +48,7 @@ The top five most important features are (from most important to least important
 
 Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, properties with larger "BuiltUpSize" and higher number of "NoOfBedroom" tend to command higher rental prices. Interestingly, "NoOfParking" actually rank higher in importance than "State", "Furnishing", "NoOfBathroom", "PropertyType" in predicting rental prices. This probably due to the lack of parking space in residental areas as most families nowadays own several cars, and thus properties with more parking lots tend to command higher rental prices. Another reason could be some property owners/investors rent their properties to multiple tenants for a single location i.e. rent by room, this increases the need for more parking lots. In such cases, properties with more/extra parking lots naturally attract more demand and thus command higher rental prices. This is a valuable finding that could benefit property investors in idenfitying properties to buy and rent out. It could also be an important factor for property owners when setting the rental prices based on this feature.
 
+Based on the different metrics, we will use a Extreme Gradient Boosting Regressor to predict rental prices of listings.
 
 
 ## Interactive Map
