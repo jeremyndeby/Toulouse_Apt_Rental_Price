@@ -1,14 +1,13 @@
-# Toulouse_Apt_Rental_Price:
+# Apartment Rental Price Interactive Map and Predictions
 
-Under Construction
 
 # Introduction: About the Project
 
 Thousands of new students move to Toulouse (France) every year for their studies for a total. It is often difficult for them to know which neighborhoods are the cheapest or to identify which apartments have been undervalued/overvalued based on their set of features. However, many research and tutorials have been focusing on training models to predict property selling prices, but relatively few on predicting apartment rental prices. This project aims to fill the gap and provide useful insights to people, especially students, to help them in their decision-making as to which apartment to rent out.
 
 In summary, the aims of this project are: 
-1. To build a web scraper to collect the apartment listings in Toulouse from the platform SeLoger.com.
-2. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
+1. To build a web scraper to collect the apartment listings in Toulouse from the platform [SeLoger.com.](https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0)
+2. To provide [an interactive geographic map](https://toulouse-apt-rental-price.herokuapp.com/geomap) to get more familiar with the different neighborhoods of the city. 
 3. To build a model to estimate what should be the correct rental price given different features and their property.
 
 
@@ -30,7 +29,6 @@ The chart breaks down the apartments for rent by:
 
 ## Predicting Rental Price
 After the data has been scraped, it is a natural progression to explore and model the relationships between the property features and the rental prices. Seven different types of algorithms were used to train the models. We will focus on comparing the performance and results of the following seven algorithms:
-
 1. Linear Regression
 2. Lasso
 3. Ridge
@@ -39,8 +37,8 @@ After the data has been scraped, it is a natural progression to explore and mode
 6. Extreme Gradient Boosting Regressor
 7. Light Gradient Boosting Regressor
 
-### Metric
 
+### Metric
 The metrics that we use for evaluation are R-squared, Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE):
 - R-squared: Measures the % of variance in the target variable explained by the data
 - MAE: Average over the test sample of the absolute differences between prediction and actual observation where all individual differences have equal weight.
@@ -50,14 +48,14 @@ Both RMSE and MAE express average model prediction error in units of the variabl
 
 To determine the best model, we need to specify what "best" means. In this case, we want to use the model to predict rental prices, it is important that the model selected is the one that minimizes prediction error, and MAE provides a more intuitive indicator of average error of the predicted values, which is easy to understand and interpret.
 
-### Model Comparison
 
+### Model Comparison
 ![Model Comparison](modeling/model_comparison.png)
 
 Based on the seven models trained, the Extreme Gradient Boosting Regressor has the highest R-squared value of 0.7744 i.e. 77.44% of the variability in rental prices can be explainedby the features collected and transformed. Extreme Gradient Boosting Regressor also has the lowest RMSE and MAE values. We will then use a Extreme Gradient Boosting Regressor to predict rental prices of listings.
 
-### Final Results
 
+### Final Results
 From the ranking of feature importances provided by xgboost we are able to identify the top five most important features:
 - The size of the appartment in squared meters ("area")
 - Surprisingly the number of toilets ("toilets"), 
@@ -65,8 +63,7 @@ From the ranking of feature importances provided by xgboost we are able to ident
 - If the apartment is furnished ("furnished")
 - If the apartment has a wooden floor ("wooden_floor")
 
-Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, apartments with larger "area", closer to the city center "nbhd_no_1_1" and that are "furnished" tend to command higher rental prices. 
-
+Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, apartments with larger "area", "furnished" and closer to the city center "nbhd_no_1_1" tend to command higher rental prices. 
 
 
 ## Data: A data directory
@@ -85,7 +82,6 @@ There are three notebooks within this repository representing different stages o
 - EDA.py - EDA of the cleaned data
 - model.py - Build and compare several models and find the best hyper-parameters for the final model
 - geomap.py - The mapping code for the interactive geographical map of Toulouse real sstate
-
 
 
 ## Heroku Files
