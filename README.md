@@ -2,14 +2,31 @@
 
 Under Construction
 
-## Introduction: About the Project
+# Introduction: About the Project
 
 Thousands of new students move to Toulouse (France) every year for their studies for a total. It is often difficult for them to know which neighborhoods are the cheapest or to identify which apartments have been undervalued/overvalued based on their set of features. However, many research and tutorials have been focusing on training models to predict property selling prices, but relatively few on predicting apartment rental prices. This project aims to fill the gap and provide useful insights to people, especially students, to help them in their decision-making as to which apartment to rent out.
 
 In summary, the aims of this project are: 
 1. To build a web scraper to collect the apartment listings in Toulouse from the platform SeLoger.com.
-2. To build a model to estimate what should be the correct rental price given different features and their property.
-3. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
+2. To provide an interactive geographic map to get more familiar with the different neighborhoods of the city. 
+3. To build a model to estimate what should be the correct rental price given different features and their property.
+
+
+## Interactive Map
+The interactive geographical map below provides details on Toulouse apartments for rent currently available. 
+The chart breaks down the apartments for rent by:
+- Median Rental Price
+- Average Rental Price
+- Median Area in Square Meters
+- Average Area in Square Meters
+- Median Rental Price per Square Meter
+- Average Rental Price per Square Meter
+- Number of Apartments for Rent
+
+[Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
+
+![Capture of Geographical Map](geomap/capture_geomap.PNG)
+
 
 ## Predicting Rental Price
 After the data has been scraped, it is a natural progression to explore and model the relationships between the property features and the rental prices. Seven different types of algorithms were used to train the models. We will focus on comparing the performance and results of the following seven algorithms:
@@ -37,34 +54,19 @@ To determine the best model, we need to specify what "best" means. In this case,
 
 ![Model Comparison](modeling/model_comparison.png)
 
-Based on the seven models trained, the Extreme Gradient Boosting Regressor has the highest R-squared value of 0.7744 i.e. 77.44% of the variability in rental prices can be explainedby the features collected and transformed. Extreme Gradient Boosting Regressor also has the lowest RMSE and MAE values.
+Based on the seven models trained, the Extreme Gradient Boosting Regressor has the highest R-squared value of 0.7744 i.e. 77.44% of the variability in rental prices can be explainedby the features collected and transformed. Extreme Gradient Boosting Regressor also has the lowest RMSE and MAE values. We will then use a Extreme Gradient Boosting Regressor to predict rental prices of listings.
 
-The top five most important features are (from most important to least important based on the ranking of feature importances):
-- The size of the appartment in squared meters ('area')
-- Surprisingly the number of toilets ('toilets'), 
-- If the apartment is located in the neighborhood 1.1 ('nbhd_no_1_1')
-- If the apartment is furnished ('furnished')
-- If the apartment has a wooden floor ('wooden_floor')
+### Final Results
 
-Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, properties with larger "BuiltUpSize" and higher number of "NoOfBedroom" tend to command higher rental prices. Interestingly, "NoOfParking" actually rank higher in importance than "State", "Furnishing", "NoOfBathroom", "PropertyType" in predicting rental prices. This probably due to the lack of parking space in residental areas as most families nowadays own several cars, and thus properties with more parking lots tend to command higher rental prices. Another reason could be some property owners/investors rent their properties to multiple tenants for a single location i.e. rent by room, this increases the need for more parking lots. In such cases, properties with more/extra parking lots naturally attract more demand and thus command higher rental prices. This is a valuable finding that could benefit property investors in idenfitying properties to buy and rent out. It could also be an important factor for property owners when setting the rental prices based on this feature.
+From the ranking of feature importances provided by xgboost we are able to identify the top five most important features:
+- The size of the appartment in squared meters ("area")
+- Surprisingly the number of toilets ("toilets"), 
+- If the apartment is located in the neighborhood 1.1 ("nbhd_no_1_1")
+- If the apartment is furnished ("furnished")
+- If the apartment has a wooden floor ("wooden_floor")
 
-Based on the different metrics, we will use a Extreme Gradient Boosting Regressor to predict rental prices of listings.
+Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, apartments with larger "area", closer to the city center "nbhd_no_1_1" and that are "furnished" tend to command higher rental prices. 
 
-
-## Interactive Map
-The interactive geographical map below provides details on Toulouse apartments for rent currently available. 
-The chart breaks down the apartments for rent by:
-- Median Rental Price
-- Average Rental Price
-- Median Area in Square Meters
-- Average Area in Square Meters
-- Median Rental Price per Square Meter
-- Average Rental Price per Square Meter
-- Number of Apartments for Rent
-
-[Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
-
-![Capture of Geographical Map](geomap/capture_geomap.PNG)
 
 
 ## Data: A data directory
@@ -73,7 +75,7 @@ In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies 
 - data_seloger_clean.csv - The cleaned data after processing and cleaning steps.
 - data_geomap.csv - The data use for the geo mapping part.
 - recensement-population-2015-grands-quartiers-population.geojson - The mapping data downloaded from [data.toulouse-metropole.fr](https://data.toulouse-metropole.fr/explore/dataset/recensement-population-2015-grands-quartiers-population/export/)
-- data_model.csv - The data used for the modeling part
+- data_for_modeling.csv - The data used for the modeling part after feature engineering and processing
 
 
 ## Notebooks
