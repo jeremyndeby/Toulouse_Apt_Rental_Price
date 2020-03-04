@@ -31,10 +31,10 @@ plt.style.use(style='ggplot')
 df = pd.read_csv(
     'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
 
+'''''EXPLANATORY DATA ANALYSIS'''''
 
-# ### Explanatory Data Analysis
+'''Quick analysis'''
 
-# ## Quick analysis
 
 # Create a simple preliminary EDA function
 def quick_EDA_func(df):
@@ -100,7 +100,8 @@ def quick_EDA_func(df):
     plt.show()
 
 
-# ## Correlation with the target variable
+'''Correlation with the target variable'''
+
 
 # Looking for correlations between different variables in the dataset,
 # we find out the features that correlate the most to the rent of the apartment in the dataset
@@ -150,7 +151,7 @@ def heatmaps_func(df, method):
     print('Find the most important features relative to target')
     corrmat = df.corr(method='spearman')
     corrmat.sort_values(['rent'], ascending=False, inplace=True)
-    print(corrmat.rent)
+    return corrmat.rent
 
 
 # Create a function that plot the relationship between 'rent'
@@ -172,7 +173,8 @@ def regplot_top_feat_func(df):
     plt.show()
 
 
-# ## Visual check of the distribution of each feature
+'''Visual check of the distribution of each feature'''
+
 
 # For a efficient model we need to review one by one each feature to determine which transformation is needed.
 # Then we will transform the numerical features first and then the categorical ones.
@@ -510,19 +512,21 @@ def plot_all_feat_func(df):
 quick_EDA_func(df)
 heatmaps_func(df, 'spearman')
 regplot_top_feat_func(df)
+
 # plot_all_feat_func(df)
 
 
+''''' FEATURE ENGINEERING'''''
 
-# ### Feature Engineering
+'''Drop several features (discussed in the EDA part)'''
 
-# ## Drop several features (discussed in the EDA part)
+
 # Create a function that drops the selected features
 def drop_feat_func(df):
     print("Data size before dropping the features is: {} ".format(df.shape))
 
     # List of features to OHE
-    feat_to_drop = ['link', 'sector_name', 'nbhd_name','charges', 'deposit','fees']
+    feat_to_drop = ['link', 'sector_name', 'nbhd_name', 'charges', 'deposit', 'fees']
     # Drop columns
     df.drop(feat_to_drop, axis=1, inplace=True)
 
@@ -531,7 +535,9 @@ def drop_feat_func(df):
     return df
 
 
-# ## One-Hot-Encoding of multiple categorical variables (discussed in the EDA part)
+'''One-Hot-Encoding of multiple categorical variables (discussed in the EDA part)'''
+
+
 # Create a One-Hot-Encoding function
 def ohe_func(df):
     # List of features to OHE
@@ -555,7 +561,9 @@ def to_dummy_func(df):
     return df
 
 
-# ## Log transformation of the Target Variable (discussed in the EDA part)
+'''Log transformation of the Target Variable (discussed in the EDA part)'''
+
+
 # Skewed numeric variables are not desirable when using Machine Learning algorithms.
 # The reason why we want to do this is move the models focus away from any extreme values,
 # to create a generalised solution. We can tame these extreme values by transforming skewed features
@@ -591,12 +599,14 @@ def log_transform_target_feat_func(df):
     print("Skewness after transformation: %f" % df['rent'].skew())
     print("Kurtosis after transformation: %f" % df['rent'].kurt())
     return df
+
+
 # We can see from the skewness and the plot that it follows much more closely to the normal distribution now.
 # This will help the algorithms work most reliably because we are now predicting a distribution that is well-known,
 # i.e. the normal distribution.
 
 
-# ## Transform Skewed Features (skewness > 0.5)
+'''Transform Skewed Features (skewness > 0.5)'''
 
 
 # Create a function that transform skewed features
@@ -613,8 +623,9 @@ def transform_feat_func(df):
     # Select skewed features (skewness > 0.50)
     skewed = skewness[abs(skewness) > 0.50]
     skewed = skewed.dropna()
-    print("There are {} skewed numerical features to Box Cox transform out of the {} initial numerical features.".format(
-        skewed.shape[0], skewness.shape[0]))
+    print(
+        "There are {} skewed numerical features to Box Cox transform out of the {} initial numerical features.".format(
+            skewed.shape[0], skewness.shape[0]))
 
     # Box Cox Transformation of skewed features
     skewed_features = skewed.index
@@ -636,13 +647,17 @@ def transform_feat_func(df):
         "There are {} remaining skewed numerical features after Box Cox transform out of the {} skewed numerical features before transformation.".format(
             skewed_after.shape[0], skewed.shape[0]))
     return df
+
+
 # We can see that a lot of parameters remained skewed due probably to features with lots of 0 values.
 
 
-# ## Assess for multi-collinearity of features
+'''Feature Selection: Assess for multi-collinearity of features'''
+
+
 # Reduce multi-collinearity as some of our top predictors are highly correlated:
 # 'area', 'rooms' and 'bedrooms'
-
+# neighborhood and sector features
 
 def drop_feat_reduce_multicollinearity_func(df, method):
     # Check heatmaps before dropping the columns
@@ -651,7 +666,9 @@ def drop_feat_reduce_multicollinearity_func(df, method):
     print("Data size before dropping the features is: {} ".format(df.shape))
 
     # List of features to OHE
-    feat_to_drop = ['rooms', 'bedrooms']
+    feat_to_drop = ['rooms', 'bedrooms',
+                    'sector_no_sector1', 'sector_no_sector2', 'sector_no_sector3',
+                    'sector_no_sector4', 'sector_no_sector5', 'sector_no_sector6']
     # Drop columns
     df.drop(feat_to_drop, axis=1, inplace=True)
 
@@ -663,7 +680,10 @@ def drop_feat_reduce_multicollinearity_func(df, method):
     return df
 
 
-# ## (Optional) Scaling features
+# (Optional)'''Feature Selection: Remove features with 0.0 importance''' (
+
+
+# (Optional) '''Scaling features'''
 # In most cases, the numerical features of the dataset do not have a certain range and they differ from each other.
 # In real life, it is nonsense to expect rental price and the size of the apartment SqM to have the same range.
 # Scaling solves this problem. The continuous features become identical in terms of the range, after a scaling process.

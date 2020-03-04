@@ -64,11 +64,10 @@ def results_func(model_name, y_pred_model_train, y_pred_model_test):
 
 
 # Create a feature importances plot function
-def plot_feat_importances_func(model_name, model):
+def feat_importances_func(model_name, model):
     # Feature importances
     ft_weights = pd.DataFrame(model.feature_importances_, columns=['weight'], index=X_train.columns)
     ft_weights.sort_values('weight', ascending=False, inplace=True)
-    # ft_weights.head(20)
 
     # Plotting feature importances
     plt.figure(figsize=(10, 25))
@@ -77,6 +76,7 @@ def plot_feat_importances_func(model_name, model):
     plt.xlabel("Feature importance")
     plt.margins(y=0.01)
     plt.show()
+    return ft_weights
 
 
 # ### Create a function that plots results
@@ -198,7 +198,7 @@ rf_r2_train, rf_r2_test, rf_mae_train, rf_mae_test, rf_rmse_train, rf_rmse_test 
                                                                                                y_pred_rf_train,
                                                                                                y_pred_rf_test)
 # Feature importances
-plot_feat_importances_func('Random Forest', rf)
+feat_importances_func('Random Forest', rf)
 
 '''GRADIENT BOOSTING REGRESSOR (default parameters)'''
 # Create instance
@@ -220,7 +220,7 @@ gbr_r2_train, gbr_r2_test, gbr_mae_train, gbr_mae_test, gbr_rmse_train, gbr_rmse
                                                                                                      y_pred_gbr_train,
                                                                                                      y_pred_gbr_test)
 # Feature importances
-plot_feat_importances_func('Gradient Boosting', gbr)
+feat_importances_func('Gradient Boosting', gbr)
 
 '''EXTREME GRADIENT BOOSTING REGRESSOR (tuned using GridSearchCV)'''
 # Create instance mae
@@ -265,7 +265,8 @@ xgb_r2_train, xgb_r2_test, xgb_mae_train, xgb_mae_test, xgb_rmse_train, xgb_rmse
                                                                                                      y_pred_xgb_train,
                                                                                                      y_pred_xgb_test)
 # Feature importances
-plot_feat_importances_func('Extreme Gradient Boosting', xgbreg)
+feat_importances_func('Extreme Gradient Boosting', xgbreg)
+
 
 '''LIGHT GRADIENT BOOSTING REGRESSOR (default parameters)'''
 # Create instance
@@ -289,7 +290,7 @@ lgbm_r2_train, lgbm_r2_test, lgbm_mae_train, lgbm_mae_test, lgbm_rmse_train, lgb
                                                                                                            y_pred_lgbm_train,
                                                                                                            y_pred_lgbm_test)
 # Feature importances
-plot_feat_importances_func('Light Gradient Boosting', lgbm)
+feat_importances_func('Light Gradient Boosting', lgbm)
 
 # ## Model Evaluation
 # In this section, we will put together the results from all four models
@@ -309,5 +310,10 @@ data_models = {'Model': ['Linear Regression', 'Lasso', 'Ridge', 'Random Forest',
 results = pd.DataFrame(data=data_models)
 
 plot_results_func(results)
+
+# To prevent overfitting, the best solution is to use more training data. A model trained on more data
+# will naturally generalize better. Here we do not have more listings available so far.
+# The next best solution is to reduce the size of the model:
+
 
 
