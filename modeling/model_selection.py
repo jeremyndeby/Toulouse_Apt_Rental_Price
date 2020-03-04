@@ -18,8 +18,7 @@ from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
 
 # Import the data after feature engineering
-df = pd.read_csv(
-    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA_feature_engineering/data_for_modeling.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA_feature_engineering/data_for_modeling.csv')
 
 # ### Splitting data
 
@@ -87,7 +86,7 @@ def plot_results_func(results_table):
     sns.set_palette("PuBuGn_d")
 
     plt.subplot(3, 1, 1)
-    plt.title("Model Comparison in terms of R-squared, RMSE and MAE", fontsize=20, weight='bold')
+    plt.title("Model Comparison in terms of R-squared, MAE and RMSE", fontsize=20, weight='bold')
     g1 = sns.barplot(x="Model", y="R-squared", data=results_table, palette="deep")
     plt.ylim(0.4, 0.9)
     g1.set_xlabel("")
@@ -117,7 +116,7 @@ def plot_results_func(results_table):
         g3.text(p.get_x() + p.get_width() / 2., height + 0.005, "{:1.4f}".format(height), ha="center", fontsize=16,
                 weight='bold')
 
-    plt.savefig('models_comparison.png')
+    plt.savefig('model_comparison.png')
     plt.show()
 
 
