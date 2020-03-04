@@ -9,6 +9,7 @@
 
 # Import libraries
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,7 +23,8 @@ from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
 
 # Import the data after feature engineering
-df = pd.read_csv('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA_feature_engineering/data_for_modeling.csv')
+df = pd.read_csv(
+    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA_feature_engineering/data_for_modeling.csv')
 
 # ### Splitting data
 
@@ -227,37 +229,14 @@ gbr_r2_train, gbr_r2_test, gbr_mae_train, gbr_mae_test, gbr_rmse_train, gbr_rmse
 # Feature importances
 feat_importances_func('Gradient Boosting', gbr)
 
-'''EXTREME GRADIENT BOOSTING REGRESSOR (tuned using GridSearchCV)'''
-# Create instance mae
+'''EXTREME GRADIENT BOOSTING REGRESSOR (tuned)'''
+# Create instance
 xgbreg = xgb.XGBRegressor(objective='reg:squarederror', random_state=42,
                           max_depth=4, min_child_weight=2,
                           gamma=0,
                           subsample=.85, colsample_bytree=.75,
                           reg_lambda=1, reg_alpha=0,
                           eta=.1, n_jobs=-1)
-
-# Extreme Gradient Boosting Regressor:
-#  	Extreme Gradient Boosting Training set R^2: : 0.9642
-# 	Extreme Gradient Boosting Test set R^2: : 0.7692
-# 	Extreme Gradient Boosting Training set RMSE: : 0.0588
-# 	Extreme Gradient Boosting Test set RMSE: : 0.1513
-# 	Extreme Gradient Boosting Training set MAE: : 0.0365
-# 	Extreme Gradient Boosting Test set MAE: : 0.0905
-
-xgbreg_v2 = xgb.XGBRegressor(objective='reg:squarederror', random_state=42,
-                             max_depth=4, min_child_weight=4,
-                             subsample=.75, colsample_bytree=.95,
-                             reg_lambda=5, reg_alpha=1e-05,
-                             eta=.01)
-
-# Extreme Gradient Boosting Regressor:
-#  	Extreme Gradient Boosting Training set R^2: : 0.8677
-# 	Extreme Gradient Boosting Test set R^2: : 0.7637
-# 	Extreme Gradient Boosting Training set RMSE: : 0.1131
-# 	Extreme Gradient Boosting Test set RMSE: : 0.1530
-# 	Extreme Gradient Boosting Training set MAE: : 0.0753
-# 	Extreme Gradient Boosting Test set MAE: : 0.0928
-
 # Fit the model on the training set
 xgbreg.fit(X_train, y_train)
 # Predict
@@ -273,8 +252,7 @@ xgb_r2_train, xgb_r2_test, xgb_mae_train, xgb_mae_test, xgb_rmse_train, xgb_rmse
 # Feature importances
 feat_importances_func('Extreme Gradient Boosting', xgbreg)
 
-
-'''LIGHT GRADIENT BOOSTING REGRESSOR (default parameters)'''
+'''LIGHT GRADIENT BOOSTING REGRESSOR (tuned)'''
 # Create instance
 lgbm = LGBMRegressor(boosting_type='gbdt', class_weight=None, colsample_bytree=0.7,
                      importance_type='split', learning_rate=0.01, max_depth=4,
@@ -319,7 +297,9 @@ plot_results_func(results)
 
 # To prevent overfitting, the best solution is to use more training data. A model trained on more data
 # will naturally generalize better. Here we do not have more listings available so far.
-# The next best solution is to reduce the size of the model:
+# The next best solution would be to reduce the size of the model (to discuss).
 
 
-
+# ### Save the best model: xgboost
+modelname = 'final_xgb_model.sav'
+joblib.dump(xgbreg, modelname)
