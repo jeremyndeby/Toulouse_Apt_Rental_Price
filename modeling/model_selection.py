@@ -3,6 +3,10 @@
 
 # ### Model Selection ### #
 
+# Source: Part of the code and methodology is based on the work of Lim Chia Hooi available here:
+# https://github.com/limchiahooi/predict-rental-prices
+# Info: Here we adapted its code and compared some additional models
+
 # Import libraries
 
 import matplotlib.pyplot as plt
@@ -75,6 +79,7 @@ def feat_importances_func(model_name, model):
     plt.title(model_name + " Feature importances", fontsize=14)
     plt.xlabel("Feature importance")
     plt.margins(y=0.01)
+    plt.savefig('feature_importances.png')
     plt.show()
     return ft_weights
 
@@ -202,10 +207,10 @@ feat_importances_func('Random Forest', rf)
 
 '''GRADIENT BOOSTING REGRESSOR (default parameters)'''
 # Create instance
-gbr = GradientBoostingRegressor(learning_rate=0.1, n_estimators=200,
+gbr = GradientBoostingRegressor(learning_rate=0.1, n_estimators=250,
                                 max_depth=7,
-                                min_samples_split=60, min_samples_leaf=11,
-                                max_features=25, subsample=0.75,
+                                min_samples_split=50, min_samples_leaf=3,
+                                max_features=21, subsample=0.8,
                                 random_state=42)
 
 # Fit the model on the training set
@@ -225,10 +230,11 @@ feat_importances_func('Gradient Boosting', gbr)
 '''EXTREME GRADIENT BOOSTING REGRESSOR (tuned using GridSearchCV)'''
 # Create instance mae
 xgbreg = xgb.XGBRegressor(objective='reg:squarederror', random_state=42,
-                          max_depth=8, min_child_weight=2,
-                          subsample=.95, colsample_bytree=.85,
-                          reg_lambda=1, reg_alpha=0.1,
-                          eta=.01, n_jobs=-1)
+                          max_depth=4, min_child_weight=2,
+                          gamma=0,
+                          subsample=.85, colsample_bytree=.75,
+                          reg_lambda=1, reg_alpha=0,
+                          eta=.1, n_jobs=-1)
 
 # Extreme Gradient Boosting Regressor:
 #  	Extreme Gradient Boosting Training set R^2: : 0.9642
