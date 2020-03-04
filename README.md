@@ -1,7 +1,7 @@
 # Apartment Rental Price Interactive Map and Predictions
 
 
-# Introduction: About the Project
+## Introduction: About the Project
 
 Thousands of new students move to Toulouse (France) every year for their studies for a total. It is often difficult for them to know which neighborhoods are the cheapest or to identify which apartments have been undervalued/overvalued based on their set of features. However, many research and tutorials have been focusing on training models to predict property selling prices, but relatively few on predicting apartment rental prices. This project aims to fill the gap and provide useful insights to people, especially students, to help them in their decision-making as to which apartment to rent out.
 
