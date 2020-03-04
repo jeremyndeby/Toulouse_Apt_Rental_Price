@@ -69,14 +69,18 @@ There are three notebooks within this repository representing different stages o
 - requirements.txt
 - runtime.txt
 
+
 ## Prerequisites
 Dependencies can be installed via:
 pip install requirements.txt
 
+
 ## Possible Improvements
-- Consolidate regularly the dataset by only scraping new listings that are not in the dataset yet
-- Scrape from additional data sources. ie. Leboncoin
+- Consolidate regularly the dataset by only scraping new listings that are not in the dataset yet (to reduce overfitting)
+- Scrape from additional data sources. ie. Leboncoin (to reduce overfitting)
+- Select other features or conduct feature engineering on existing features
 - Add a widget to the interactive map to be able to select per number of rooms/bedrooms 
+
 
 ## Author
 Jeremy Ndeby - Creator - [@jeremyndeby](https://github.com/jeremyndeby)
