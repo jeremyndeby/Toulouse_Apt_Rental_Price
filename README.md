@@ -22,7 +22,7 @@ After the data has been scraped, it is a natural progression to explore and mode
 6. Extreme Gradient Boosting Regressor
 7. Light Gradient Boosting Regressor
 
-![Models Comparison](modeling/models_comparison.png)
+![Models Comparison](modeling/model_comparison.png)
 
 ### Metric
 Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
