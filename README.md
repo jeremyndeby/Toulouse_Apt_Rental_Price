@@ -56,7 +56,7 @@ Based on the seven models trained, the Extreme Gradient Boosting Regressor has t
 
 
 ### Final Results
-From the ranking of feature importances provided by xgboost we are able to identify the top five most important features:
+From the ranking of [feature importances](modeling/feature_importances.png) provided by xgboost we are able to identify the top five most important features:
 - The size of the appartment in squared meters ("area")
 - Surprisingly the number of toilets ("toilets"), 
 - If the apartment is located in the neighborhood 1.1 ("nbhd_no_1_1")
