@@ -22,12 +22,33 @@ After the data has been scraped, it is a natural progression to explore and mode
 6. Extreme Gradient Boosting Regressor
 7. Light Gradient Boosting Regressor
 
-![Models Comparison](modeling/model_comparison.png)
-
 ### Metric
-Submissions will be evaluated based on RMSE (root mean squared error). Lower the RMSE, better the model.
-- R-squared: meassures the % of variance in the target variable explained by the data
-- RMSE: measures the distance between the predicted values and actual values
+
+The metrics that we use for evaluation are R-squared, Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE):
+- R-squared: Measures the % of variance in the target variable explained by the data
+- MAE: Average over the test sample of the absolute differences between prediction and actual observation where all individual differences have equal weight.
+- RMSE: Square root of the average of squared differences between prediction and actual observation.
+
+Both RMSE and MAE express average model prediction error in units of the variable of interest, the lower better the model, but RMSE gives a relatively high weight to large errors which means it is more useful when large errors are particularly undesirable. It is also a more popular metric in the field. However, MAE is easier to understand and interpret as it measures the average error.
+
+To determine the best model, we need to specify what "best" means. In this case, we want to use the model to predict rental prices, it is important that the model selected is the one that minimizes prediction error, and MAE provides a more intuitive indicator of average error of the predicted values, which is easy to understand and interpret.
+
+### Model Comparison
+
+![Model Comparison](modeling/model_comparison.png)
+
+Based on the seven models trained, the Extreme Gradient Boosting Regressor has the highest R-squared value of 0.7744 i.e. 77.44% of the variability in rental prices can be explained using the features. Extreme Gradient Boosting Regressor also has the lowest RMSE and MAE values.
+
+The top five most important features are (from most important to least important based on the ranking of feature importances):
+- The size of the appartment in squared meters ('area')
+- Surprisingly the number of toilets ('toilets'), 
+- If the apartment is located in the neighborhood 1.1 ('nbhd_no_1_1')
+- If the apartment is furnished ('furnished')
+- If the apartment has a wooden floor ('wooden_floor')
+
+Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, properties with larger "BuiltUpSize" and higher number of "NoOfBedroom" tend to command higher rental prices. Interestingly, "NoOfParking" actually rank higher in importance than "State", "Furnishing", "NoOfBathroom", "PropertyType" in predicting rental prices. This probably due to the lack of parking space in residental areas as most families nowadays own several cars, and thus properties with more parking lots tend to command higher rental prices. Another reason could be some property owners/investors rent their properties to multiple tenants for a single location i.e. rent by room, this increases the need for more parking lots. In such cases, properties with more/extra parking lots naturally attract more demand and thus command higher rental prices. This is a valuable finding that could benefit property investors in idenfitying properties to buy and rent out. It could also be an important factor for property owners when setting the rental prices based on this feature.
+
+
 
 ## Interactive Map
 The interactive geographical map below provides details on Toulouse apartments for rent currently available. 
