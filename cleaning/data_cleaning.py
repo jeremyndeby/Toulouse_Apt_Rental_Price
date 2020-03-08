@@ -24,7 +24,7 @@ plt.style.use(style='ggplot')
 # ## Import the data
 # df = pd.read_csv(r'C:/Users/jerem/Google Drive/Mes Documents/Travail/Projects/Toulouse_Apt_Rental_Price/data/data_seloger_raw.csv')
 df = pd.read_csv(
-    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/data/data_seloger_raw.csv')
+    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/scraping/data_seloger_raw.csv')
 
 
 # ## Quick inspection of the features
