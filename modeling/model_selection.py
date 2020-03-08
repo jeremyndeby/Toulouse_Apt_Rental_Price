@@ -205,7 +205,7 @@ rf_r2_train, rf_r2_test, rf_mae_train, rf_mae_test, rf_rmse_train, rf_rmse_test 
                                                                                                y_pred_rf_train,
                                                                                                y_pred_rf_test)
 # Feature importances
-feat_importances_func('Random Forest', rf)
+#feat_importances_func('Random Forest', rf)
 
 '''GRADIENT BOOSTING REGRESSOR (default parameters)'''
 # Create instance
@@ -227,7 +227,7 @@ gbr_r2_train, gbr_r2_test, gbr_mae_train, gbr_mae_test, gbr_rmse_train, gbr_rmse
                                                                                                      y_pred_gbr_train,
                                                                                                      y_pred_gbr_test)
 # Feature importances
-feat_importances_func('Gradient Boosting', gbr)
+#feat_importances_func('Gradient Boosting', gbr)
 
 '''EXTREME GRADIENT BOOSTING REGRESSOR (tuned)'''
 # Create instance
@@ -274,7 +274,7 @@ lgbm_r2_train, lgbm_r2_test, lgbm_mae_train, lgbm_mae_test, lgbm_rmse_train, lgb
                                                                                                            y_pred_lgbm_train,
                                                                                                            y_pred_lgbm_test)
 # Feature importances
-feat_importances_func('Light Gradient Boosting', lgbm)
+#feat_importances_func('Light Gradient Boosting', lgbm)
 
 # ## Model Evaluation
 # In this section, we will put together the results from all four models
@@ -294,12 +294,110 @@ data_models = {'Model': ['Linear Regression', 'Lasso', 'Ridge', 'Random Forest',
 results = pd.DataFrame(data=data_models)
 
 plot_results_func(results)
-
-# To prevent overfitting, the best solution is to use more training data. A model trained on more data
-# will naturally generalize better. Here we do not have more listings available so far.
-# The next best solution would be to reduce the size of the model (to discuss).
-
+# Best model is xgboost
 
 # ### Save the best model: xgboost
 modelname = 'final_xgb_model.sav'
 joblib.dump(xgbreg, modelname)
+
+
+# ### Predict rental prices
+
+# Set a threshold of the real estate market (in percentage) for overvalued and undervalued apartment rental prices
+threshold = .1
+
+# ## Create a predict function that returns the predicted rental price, the difference in percentages between
+# actual and predicted rental prices, and the rental value category (fair-value, overvalued or undervalued)
+def predict_func(threshold):
+    # Import the data after feature engineering
+    df_model = pd.read_csv(
+        'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/EDA_feature_engineering/data_for_modeling.csv')
+
+    # Save the 'rent' column
+    rent = df_model['rent']
+
+    # Drop the 'rent' feature
+    df_model.drop("rent", axis=1, inplace=True)
+    X = df_model
+
+    # Load the model from disk
+    loaded_model = joblib.load('final_xgb_model.sav')
+
+    # Predict
+    rent_pred = loaded_model.predict(X)
+
+    # Concat actual and predicted rental prices
+    df_pred = pd.DataFrame({"rental_price": rent, "rental_price_pred": rent_pred})
+
+    # expm1 transformation
+    df_pred = df_pred.apply(np.expm1)
+
+    # Create the difference in percentages between predicted price variable
+    df_pred['pct_change'] = round(((df_pred['rental_price'] - df_pred['rental_price_pred']) / df_pred['rental_price_pred']) * 1, 2)
+
+    # Create a category for overvalued, fair-valued or undervalued apartments based on the threshold
+    threshold_under = -threshold
+    threshold_over = threshold
+    df_pred['category'] = 'Fair-value'
+    df_pred.loc[df_pred['pct_change'] > threshold_over, 'category'] = 'Overvalued'
+    df_pred.loc[df_pred['pct_change'] < threshold_under, 'category'] = 'Undervalued'
+
+    print('Distribution of the difference rental price categories:\n {}'.format(round(df_pred.groupby('category').rental_price.count() / len(df_pred), 2)))
+
+    # Import the cleaned data from the cleaning part
+    df_clean = pd.read_csv(
+        'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
+
+    # Drop the 'rent' feature
+    df_clean.drop("rent", axis=1, inplace=True)
+
+    # Concat tables
+    df_final = pd.concat([df_clean, df_pred], axis=1)
+
+
+    # ### Export the file
+    df_final.to_csv('data_final.csv', index=False)
+    print("Data exported")
+
+    return df_final
+
+
+# ## Create a plot function for predicted new features
+def plot_predictions_func():
+    # Plot the new features
+    plt.rcParams["axes.labelsize"] = 12
+    plt.figure(figsize=(26, 18))
+    sns.set_palette("deep")
+
+    my_tab = pd.crosstab(index=df_final['sector_name'], columns=df_final['category'])
+    my_tab.plot.bar()
+    plt.ylabel('# Apartment available', fontsize=10)
+    plt.xlabel('')
+    plt.tick_params(labelsize=6)
+    plt.title('Distribution of Apartment available for rent per Sector and Category', fontsize=10, weight='bold')
+    plt.tight_layout()
+    plt.savefig('distr_sector_category.png')
+    plt.show()
+
+    sns.pairplot(x_vars=["area"], y_vars=["rental_price"], data=df_final, hue="category", height=5)
+    plt.ylabel('Actual Rental Price (€)', fontsize=10)
+    plt.xlabel('Size (SqM)', fontsize=10)
+    plt.tick_params(labelsize=6)
+    # plt.title('Relation between Rental Price and size in SqM per category')
+    plt.tight_layout()
+    plt.savefig('plot_rent_area_cat.png')
+    plt.show()
+
+    sns.pairplot(x_vars=["pct_change"], y_vars=["rental_price"], data=df_final, hue="category", height=5)
+    plt.ylabel('Actual Rental Price (€)', fontsize=10)
+    plt.xlabel('Percentage of change between Predicted and Actual Rental Price (%)', fontsize=10)
+    plt.tick_params(labelsize=6)
+    # plt.title('Relation between Rental Price and \n the Difference between Actual and Predicted Rental Prices (%) per category')
+    plt.tight_layout()
+    plt.savefig('plot_rent_diff_cat.png')
+    plt.show()
+
+
+
+df_final = predict_func(threshold)
+plot_predictions_func()

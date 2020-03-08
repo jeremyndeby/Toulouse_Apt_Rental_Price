@@ -82,7 +82,7 @@ def quick_EDA_func(df):
     sns.barplot(x=nbr['sector_name'], y=nbr['# Apartments'], palette="Reds_r")
     plt.xlabel('\nSectors')
     plt.ylabel("Number of listings\n")
-    plt.title("Number of listings per sector in Toulouse on seLoger.com\n")
+    plt.title("Number of listings per sector in Toulouse on SeLoger.com\n")
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
@@ -94,9 +94,14 @@ def quick_EDA_func(df):
     sns.barplot(x=price['sector_name'], y=price['rent'], palette="Blues_r")
     plt.xlabel('\nSectors')
     plt.ylabel('Median Rental Price (€)\n')
-    plt.title("Median Rental Price per sector in Toulouse on seLoger.com\n")
+    plt.title("Median Rental Price per sector in Toulouse on SeLoger.com\n")
     plt.xticks(rotation=45)
     plt.tight_layout()
+    plt.show()
+
+    # Visual inspection between rental price and area of the property per sector
+    sns.pairplot(x_vars=["area"], y_vars=["rent"], data=df, hue="sector_name", height=5)
+    plt.title("Relation between Area and Rental Price per sector in Toulouse on seLoger.com\n")
     plt.show()
 
 
@@ -680,7 +685,7 @@ def drop_feat_reduce_multicollinearity_func(df, method):
     return df
 
 
-# (Optional)'''Feature Selection: Remove features with 0.0 importance''' (
+# (Optional)'''Feature Selection: Remove features with 0.0 importance'''
 
 
 # (Optional) '''Scaling features'''
