@@ -65,6 +65,17 @@ From the ranking of [feature importances](modeling/feature_importances.png) prov
 
 Generally, the feature importances ranking conforms to conventional wisdom on property rental prices. For example, apartments with larger "area", "furnished" and closer to the city center "nbhd_no_1_1" tend to command higher rental prices. 
 
+Once we have predicted the rental prices we have been able to to determine: 
+- The difference in percentages between the predicted rental price and actual rental price for each apartment ("diff_pct")
+- If the apartment is overvalued, fair-valued or undervalued ("category"). We create this new feature by setting a threshold at 10% using the difference in percentages created previously. Meaning that for an apartment with a predicted rental price of 1,000 € the apartment is considered:
+- Overvalued when its actual rental price is above 1,100 € 
+- Fair-valued when its actual rental price between 900 € and 1,100 €
+- Undervalued when its actual rental price is below 900 € 
+This threshold can be modified at anytime and depends of ones definition of overvalued and undervalued apartments for rent. 
+This new features has for purpose to help people know for which listings there are getting the best rental prices.
+
+As we can see below it seems that most overvalued but also undervalued apartments are located in the center of Toulouse. This could mean that in some sectors we are lacking some information and we might classify as overvalued a property that in fact at-value. There might be more in stake than the features we used to explain the rental price.
+
 
 ## Data: A data directory
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
