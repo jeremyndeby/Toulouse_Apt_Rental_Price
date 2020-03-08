@@ -76,9 +76,9 @@ This new features has for purpose to help people know for which listings there a
 
 As we can see below it seems that most overvalued but also undervalued apartments are located in the center of Toulouse. This could mean that in some sectors we are lacking some information and we might classify as overvalued a property that in fact at-value. There might be more in stake than the features we used to explain the rental price.
 
-[Distribution of apartment per sector and category](modeling/distr_sector_category.png)
-[Boxplot of rental price per size and category](modeling/plot_rent_area_cat.png)
-[Boxplot of rental price per percentage of change and category](modeling/plot_rent_diff_cat.png)
+![Distribution of apartment per sector and category](modeling/distr_sector_category.png)
+![Boxplot of rental price per size and category](modeling/plot_rent_area_cat.png)
+![Boxplot of rental price per percentage of change and category](modeling/plot_rent_diff_cat.png)
 
 ## Data: A data directory
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
