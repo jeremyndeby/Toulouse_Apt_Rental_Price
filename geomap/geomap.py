@@ -40,25 +40,35 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 # Import the cleaned data from the cleaning part
 neighborhood_data = pd.read_csv(
-    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/cleaning/data_seloger_clean.csv')
+    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/modeling/data_final.csv')
 
 
 # Create a function that clean data and group by neighborhood
 def neighborhood_data_func():
     # Create a rent_SqM feature
-    neighborhood_data['Rent_SqM'] = neighborhood_data['rent'] / neighborhood_data['area']
+    neighborhood_data['Rent_SqM'] = neighborhood_data['rental_price'] / neighborhood_data['area']
+
+    # Transform the category feature to dummy
+    neighborhood_data['overvalued'] = [1 if x == 'Overvalued' else 0 for x in neighborhood_data['category']]
+    neighborhood_data['undervalued'] = [1 if x == 'Undervalued' else 0 for x in neighborhood_data['category']]
 
     # Create a new df with the features of interest grouped by neighborhood
     nbhd_data = neighborhood_data.groupby(['sector_no', 'sector_name', 'nbhd_no', 'nbhd_name']).agg(
-        Tot_Apt_ForRent=('nbhd_no', 'size'),
-        Min_Rent=('rent', 'min'),
-        Max_Rent=('rent', 'max'),
-        Avg_Rent=('rent', np.mean),
-        Median_Rent=('rent', np.median),
+        Min_Rent=('rental_price', 'min'),
+        Max_Rent=('rental_price', 'max'),
+        Avg_Rent=('rental_price', np.mean),
+        Median_Rent=('rental_price', np.median),
         Avg_Area=('area', np.mean),
         Median_Area=('area', np.median),
         Avg_Rent_SqM=('Rent_SqM', np.mean),
-        Median_Rent_SqM=('Rent_SqM', np.median))
+        Median_Rent_SqM=('Rent_SqM', np.median),
+        Tot_Apt_ForRent=('nbhd_no', 'size'),
+        Tot_Overvalued=('overvalued', np.sum),
+        Tot_Undervalued=('undervalued', np.sum))
+
+    # Create a percentage of overvalued/undervalued apartments features
+    nbhd_data['Pct_Overvalued'] = round((nbhd_data['Tot_Overvalued'] / nbhd_data['Tot_Apt_ForRent']), 2)
+    nbhd_data['Pct_Undervalued'] = round((nbhd_data['Tot_Undervalued'] / nbhd_data['Tot_Apt_ForRent']), 2)
 
     # Convert index of a pandas dataframe into a column
     nbhd_data.reset_index('nbhd_name', inplace=True)
@@ -67,9 +77,10 @@ def neighborhood_data_func():
     nbhd_data.reset_index('sector_no', inplace=True)
 
     # Convert to integer
-    cols_round0 = ['Tot_Apt_ForRent',
-                   'Min_Rent', 'Max_Rent', 'Avg_Rent', 'Median_Rent',
-                   'Avg_Area', 'Median_Area']
+    cols_round0 = ['Min_Rent', 'Max_Rent', 'Avg_Rent', 'Median_Rent',
+                   'Avg_Area', 'Median_Area',
+                   'Tot_Apt_ForRent', 'Tot_Overvalued', 'Tot_Undervalued']
+
     for i in cols_round0:
         nbhd_data = nbhd_data.astype({i: 'int'})
 
@@ -83,7 +94,8 @@ def neighborhood_data_func():
 
 nbhd_data = neighborhood_data_func()
 
-
+nbhd_data.Pct_Overvalued.describe()
+nbhd_data.Pct_Undervalued.describe()
 # ## Prepare the mapping data and GeoDataFrame
 
 # Toulouse, through their website https://data.toulouse-metropole.fr/,
@@ -91,7 +103,8 @@ nbhd_data = neighborhood_data_func()
 # We will import one of them into a GeoDataframe object.
 
 # Read the geojson map file for Neighborhoods into a GeoDataframe object
-tlse = geopandas.read_file('https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
+tlse = geopandas.read_file(
+    'https://raw.githubusercontent.com/jeremyndeby/Toulouse_Apt_Rental_Price/master/geomap/recensement-population-2015-grands-quartiers-population.geojson')
 
 # By taking a visual look at the neighborhood names we identify
 # that each neighborhood have been divided in smaller ones in the GeoDataFrame.
@@ -139,19 +152,20 @@ def tlse_data_func():
 
 tlse_agg = tlse_data_func()
 
-
 # ## Create colorbar formatting lookup table
 
 # This dictionary contains the formatting for the data in the plots
-format_data = [('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent'),
-               ('Min_Rent', 250, 550, '0,0 ', 'Minimum Rental Price (€)'),
+format_data = [('Min_Rent', 250, 550, '0,0 ', 'Minimum Rental Price (€)'),
                ('Max_Rent', 850, 3000, '0,0', 'Maximum Rental Price (€)'),
                ('Avg_Rent', 550, 800, '0,0', 'Average Rental Price (€)'),
                ('Median_Rent', 550, 750, '0,0', 'Median Rental Price (€)'),
                ('Avg_Area', 40, 60, '0,0', 'Average Area (SqM)'),
                ('Median_Area', 40, 60, '0,0', 'Median Area (SqM)'),
                ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rental Price per Square Meter'),
-               ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rental Price per Square Meter')]
+               ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rental Price per Square Meter'),
+               ('Tot_Apt_ForRent', 0, 500, '0,0', 'Total Number of Apartments'),
+               ('Pct_Overvalued', 0, 0.25, '0,0', 'Percentage of Overvalued Apartments'),
+               ('Pct_Undervalued', 0, 0.20, '0,0', 'Percentage of Undervalued Apartments')]
 
 # Create a DataFrame object from the dictionary
 format_df = pd.DataFrame(format_data, columns=['field', 'min_range', 'max_range', 'format', 'verbage'])
@@ -247,7 +261,9 @@ palette = palette[::-1]
 # Add hover tool
 hover = HoverTool(tooltips=[('Sector', '@sector_name'),
                             ('Neighborhood', '@nbhd_name'),
-                            ('# Apartment', '@Tot_Apt_ForRent available'),
+                            ('# Apartments', '@Tot_Apt_ForRent'),
+                            ('# Overvalued Apartments', '@Tot_Overvalued'),
+                            ('# Undervalued Apartments', '@Tot_Undervalued'),
                             ('Median Rental Price', '@Median_Rent{,} €'),
                             ('Average Rental Price', '@Avg_Rent{,} €'),
                             ('Median Area', '@Median_Area{,} SqM'),
@@ -264,7 +280,8 @@ select = Select(title='Select Criteria:', value='Median Rental Price (€)',
                 options=['Median Rental Price (€)', 'Average Rental Price (€)',
                          'Median Area (SqM)', 'Average Area (SqM)',
                          'Median Rental Price per Square Meter', 'Average Rental Price per Square Meter',
-                         'Number of Apartments For Rent'])
+                         'Total Number of Apartments',
+                         'Percentage of Overvalued Apartments', 'Percentage of Undervalued Apartments'])
 select.on_change('value', update_plot)
 
 # Make a column layout of widgetbox(slider) and plot, and add it to the current document
