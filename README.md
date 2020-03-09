@@ -1,4 +1,4 @@
-# Apartment Rental Price Interactive Map and Predictions
+# Apartment Rental Price Predictions and Interactive Map 
 
 
 ## Introduction: About the Project
@@ -7,24 +7,8 @@ Thousands of new students move to Toulouse (France) every year for their studies
 
 In summary, the aims of this project are: 
 1. To build a web scraper to collect the apartment listings in Toulouse from the platform [SeLoger.com.](https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0)
-2. To provide [an interactive geographic map](https://toulouse-apt-rental-price.herokuapp.com/geomap) to get more familiar with the different neighborhoods of the city. 
-3. To build a model to estimate what should be the correct rental price given different features and their property.
-
-
-## Interactive Map
-The interactive geographical map below provides details on Toulouse apartments for rent currently available. 
-The chart breaks down the apartments for rent by:
-- Median Rental Price
-- Average Rental Price
-- Median Area in Square Meters
-- Average Area in Square Meters
-- Median Rental Price per Square Meter
-- Average Rental Price per Square Meter
-- Number of Apartments for Rent
-
-[Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
-
-![Capture of Geographical Map](geomap/capture_geomap.PNG)
+2. To build a model to estimate what should be the correct rental price given different features and their property.
+3. To provide [an interactive geographic map](https://toulouse-apt-rental-price.herokuapp.com/geomap) to get more familiar with the different neighborhoods of the city and incorporating the number of overvalued and undervalued apartments per neighborhood from the predictions made previously.
 
 
 ## Predicting Rental Price
@@ -67,7 +51,7 @@ Generally, the feature importances ranking conforms to conventional wisdom on pr
 
 Once we have predicted the rental prices we have been able to to determine: 
 - The percentage of change between between the predicted rental price and the actual rental price for each apartment ("pct_change"). This gives an idea of the magnitude of the difference between predicted and actual rental prices for each listing.
-- If the apartment is overvalued, fair-valued or undervalued ("category"). We create this new feature by setting a threshold at 10% using the difference in percentages created previously. Meaning that for an apartment with a predicted rental price of 1,000 € the apartment is considered:
+- If the apartment is overvalued, fair-valued or undervalued ("category"). We create this new feature by setting a threshold at 10% using the difference in percentages created previously. Meaning that for an apartment with a predicted rental price of 1,000 € the apartment will be considered:
   - Overvalued when its actual rental price is above 1,100 € 
   - Fair-valued when its actual rental price between 900 € and 1,100 €
   - Undervalued when its actual rental price is below 900 € 
@@ -79,6 +63,25 @@ As we can see below it seems that most overvalued but also undervalued apartment
 ![Distribution of apartment per sector and category](modeling/distr_sector_category.png)
 ![Boxplot of rental price per size and category](modeling/plot_rent_area_cat.png)
 ![Boxplot of rental price per percentage of change and category](modeling/plot_rent_diff_cat.png)
+
+
+## Interactive Map
+The interactive geographical map below provides details on Toulouse apartments for rent currently available. 
+The chart breaks down the apartments for rent by:
+- Median Rental Price
+- Average Rental Price
+- Median Area in Square Meters
+- Average Area in Square Meters
+- Median Rental Price per Square Meter
+- Average Rental Price per Square Meter
+- Number of Apartments for Rent
+- Percentage of Overvalued Apartments for Rent based on the predictions made in the previous part (threshold at 10%)
+- Percentage of Undervalued Apartments for Rent based on the predictions made in the previous part (threshold at 10%)
+
+
+[Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
+
+![Capture of Geographical Map](geomap/capture_geomap.PNG)
 
 ## Data: A data directory
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
