@@ -164,8 +164,8 @@ format_data = [('Min_Rent', 250, 550, '0,0 ', 'Minimum Rental Price (€)'),
                ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rental Price per Square Meter'),
                ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rental Price per Square Meter'),
                ('Tot_Apt_ForRent', 0, 500, '0,0', 'Total Number of Apartments'),
-               ('Pct_Overvalued', 0, 0.25, '0,0', 'Percentage of Overvalued Apartments'),
-               ('Pct_Undervalued', 0, 0.20, '0,0', 'Percentage of Undervalued Apartments')]
+               ('Pct_Overvalued', 0, 0.25, '0 %', 'Percentage of Overvalued Apartments'),
+               ('Pct_Undervalued', 0, 0.20, '0 %', 'Percentage of Undervalued Apartments')]
 
 # Create a DataFrame object from the dictionary
 format_df = pd.DataFrame(format_data, columns=['field', 'min_range', 'max_range', 'format', 'verbage'])
@@ -294,7 +294,7 @@ curdoc().add_root(layout)
 # show(p)
 
 # Save the map
-# outfp = r'./geomap/test3.html' # Output filepath
+# outfp = r'./geomap/geomap.html' # Output filepath
 # save(p, outfp)
 
 # Open locally with Bokeh Server (Run from command prompt)
