@@ -163,9 +163,9 @@ format_data = [('Min_Rent', 250, 550, '0,0 ', 'Minimum Rental Price (€)'),
                ('Median_Area', 40, 60, '0,0', 'Median Area (SqM)'),
                ('Avg_Rent_SqM', 11, 18, '0,0', 'Average Rental Price per Square Meter'),
                ('Median_Rent_SqM', 11, 18, '0,0', 'Median Rental Price per Square Meter'),
-               ('Tot_Apt_ForRent', 0, 500, '0,0', 'Number of Apartments For Rent'),
-               ('Pct_Overvalued', 0, 0.25, '0,0', 'Number of Apartments For Rent'),
-               ('Pct_Undervalued', 0, 0.20, '0,0', 'Number of Apartments For Rent')]
+               ('Tot_Apt_ForRent', 0, 500, '0,0', 'Total Number of Apartments'),
+               ('Pct_Overvalued', 0, 0.25, '0,0', 'Percentage of Overvalued Apartments'),
+               ('Pct_Undervalued', 0, 0.20, '0,0', 'Percentage of Undervalued Apartments')]
 
 # Create a DataFrame object from the dictionary
 format_df = pd.DataFrame(format_data, columns=['field', 'min_range', 'max_range', 'format', 'verbage'])
@@ -262,8 +262,8 @@ palette = palette[::-1]
 hover = HoverTool(tooltips=[('Sector', '@sector_name'),
                             ('Neighborhood', '@nbhd_name'),
                             ('# Apartments', '@Tot_Apt_ForRent'),
-                            ('# Apartments Overvalued', '@Tot_Overvalued'),
-                            ('# Apartments Undervalued', '@Tot_Undervalued'),
+                            ('# Overvalued Apartments', '@Tot_Overvalued'),
+                            ('# Undervalued Apartments', '@Tot_Undervalued'),
                             ('Median Rental Price', '@Median_Rent{,} €'),
                             ('Average Rental Price', '@Avg_Rent{,} €'),
                             ('Median Area', '@Median_Area{,} SqM'),
@@ -280,8 +280,8 @@ select = Select(title='Select Criteria:', value='Median Rental Price (€)',
                 options=['Median Rental Price (€)', 'Average Rental Price (€)',
                          'Median Area (SqM)', 'Average Area (SqM)',
                          'Median Rental Price per Square Meter', 'Average Rental Price per Square Meter',
-                         'Number of Apartments For Rent',
-                         'Percentage of Apartments Overvalued', 'Percentage of Apartments Undervalued'])
+                         'Total Number of Apartments',
+                         'Percentage of Overvalued Apartments', 'Percentage of Undervalued Apartments'])
 select.on_change('value', update_plot)
 
 # Make a column layout of widgetbox(slider) and plot, and add it to the current document
