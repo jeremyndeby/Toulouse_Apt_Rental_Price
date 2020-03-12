@@ -7,8 +7,8 @@ Thousands of new students move to Toulouse (France) every year for their studies
 
 In summary, the aims of this project are: 
 1. To build a web scraper to collect the apartment listings in Toulouse from the platform [SeLoger.com.](https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0)
-2. To build a model to estimate what should be the correct rental price given different features and their property in order to indentify overvalued and undervalued apartments.
-3. To provide [an interactive geographic map](https://toulouse-apt-rental-price.herokuapp.com/geomap) to get more familiar with the different neighborhoods of the city. We also incorpore the percentage of overvalued and undervalued apartments per neighborhood from the predictions made previously.
+2. To build a model to estimate what should be the correct rental price given different features and their property in order to identify overvalued and undervalued apartments.
+3. To provide [an interactive geographic map](https://toulouse-apt-rental-price.herokuapp.com/geomap) to get more familiar with the different neighborhoods of the city. We also incorporate the percentage of overvalued and undervalued apartments per neighborhood from the predictions made previously.
 
 
 ## Predicting Rental Price
