@@ -1,5 +1,6 @@
 # Apartment Rental Price Predictions and Interactive Map 
 
+![Capture of Geographical Map](geomap/geomap_gif.gif)
 
 ## Introduction: About the Project
 
@@ -81,7 +82,7 @@ The chart breaks down the apartments for rent by:
 
 [Link to Interactive Map of Toulouse Apartments For Rent 2020](https://toulouse-apt-rental-price.herokuapp.com/geomap)
 
-![Capture of Geographical Map](geomap/capture_geomap.PNG)
+![Capture of Geographical Map](geomap/geomap_gif.gif)
 
 ## Data: A data directory
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
