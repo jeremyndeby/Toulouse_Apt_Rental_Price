@@ -88,10 +88,9 @@ The chart breaks down the apartments for rent by:
 In Toulouse, SeLoger.com is an online marketplace allowing real estate agencies and owners to post listings on their website. The website gathers most of apartments for rent of the city. The data is based on listings from SeLoger.com and is collected using a custom scraper. 
 - data_seloger_raw.csv - The raw data scraped from [SeLoger.com](https://www.seloger.com/immobilier/locations/immo-toulouse-31/bien-appartement/?LISTING-LISTpg=0) for all currently available apartments for rent in Toulouse, France.
 - data_seloger_clean.csv - The cleaned data after processing and cleaning steps.
-- data_geomap.csv - The data use for the geo mapping part.
 - recensement-population-2015-grands-quartiers-population.geojson - The mapping data downloaded from [data.toulouse-metropole.fr](https://data.toulouse-metropole.fr/explore/dataset/recensement-population-2015-grands-quartiers-population/export/)
 - data_for_modeling.csv - The data used for the modeling part after feature engineering and processing
-
+- data_final.csv - The final dataset containing the cleaned listings and features and predictions made by the trained model
 
 ## Notebooks
 There are three notebooks within this repository representing different stages of the project:
